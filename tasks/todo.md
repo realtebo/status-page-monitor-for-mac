@@ -43,23 +43,23 @@ Tasks are ordered by dependency. Complete each provider and its tutorial before 
 **Description:** Add stable service identifiers, provider definitions, typed observations, incident data, and a typed distinction between valid observations and check failures. Register all 16 confirmed services.
 
 **Acceptance criteria:**
-- [ ] The shared contract can express operational state, active incident details, and a failed check separately.
-- [ ] All 16 service ids and status URLs match `SPEC-service-providers.md`.
-- [ ] Missing or unrecognized status data cannot be represented as an implicit all-clear result.
+- [x] The shared contract can express operational state, active incident details, and a failed check separately.
+- [x] All 16 service ids and status URLs match `SPEC-service-providers.md` in catalog order.
+- [x] Missing fields and unrecognized statuses have explicit failure reasons separate from service conditions.
 
-**Verification:** Build the app and run focused contract/catalog tests for the 16 entries and result variants.
+**Verification:** `xcodebuild -quiet -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -destination 'platform=macOS' -derivedDataPath build test` passed all 8 app and provider-contract tests. The catalog test checks all 16 ids, their order, exact status-page URLs, HTTPS URLs, and provider attribution.
 
 **Dependencies:** Task 2.
 
-**Files likely touched:** `Sources/ServiceProviders/`, `Tests/ServiceProvidersTests/`.
+**Files touched:** `Sources/ServiceProviders/`, `Tests/ServiceProvidersTests/`, `StatusPageMonitor.xcodeproj/project.pbxproj`, `SPEC-service-providers.md`, `README.md`, and this task list.
 
 **Estimated scope:** Medium.
 
 ### Checkpoint: Provider foundation
 
-- [ ] App scaffold builds and launches.
-- [ ] Provider contract and 16-entry catalog are stable.
-- [ ] Foundation tests pass before parser or service-specific work begins.
+- [x] App scaffold builds and launches.
+- [x] Provider contract and 16-entry catalog are stable.
+- [x] Foundation tests pass before parser or service-specific work begins.
 
 ### Task 4: Implement and validate versioned JSON provider definitions
 

@@ -37,7 +37,9 @@ xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -desti
 ## Project Structure
 
 - `Sources/StatusPageMonitorApp/` — native SwiftUI application and menu bar interface
+- `Sources/ServiceProviders/` — shared provider contract and built-in service catalog
 - `Tests/StatusPageMonitorAppTests/` — app-level tests
+- `Tests/ServiceProvidersTests/` — provider contract and catalog tests
 - `Documentation/architecture/decisions/` — recorded architecture decisions
 - `SPEC-*.md` — approved product and module specifications
 - `tasks/` — implementation plan and ordered checklist

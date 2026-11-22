@@ -99,6 +99,15 @@ protocol StatusProvider: Sendable {
 
 `ProviderCheckResult` distinguishes a valid service observation from a failed check. A valid observation contains the overall condition and active incidents; a failed check contains a typed reason and timestamp. Missing or unrecognized required fields are check failures, never an implicit healthy state.
 
+### Typed result model
+
+- `ServiceID` is a stable, lowercase identifier. The built-in catalog uses the 16 ids in the order listed above.
+- `ServiceDefinition` contains the id, display name, HTTPS status-page URL, and publisher name used for source attribution.
+- `ServiceObservation` contains a known `ServiceCondition`, the active incidents, and the time the response was observed. Conditions are `operational`, `degradedPerformance`, `partialOutage`, `majorOutage`, and `maintenance`; there is no `unknown` condition.
+- Each `ServiceIncident` carries its title, active lifecycle status, impact, optional summary, source URL, and source timestamps. Its source id is optional because some status pages do not publish one. Resolved incidents are omitted from `activeIncidents`; the monitoring engine detects recovery when a previously active incident is no longer present.
+- `ProviderCheckResult` is either `.observed(ServiceObservation)` or `.failed(CheckFailure)`. Failure reasons distinguish network errors, HTTP status errors, invalid responses, missing fields, unrecognized status values, and invalid definitions. Each failure includes the attempted time.
+- `StatusProvider.check(at:)` receives the attempt time and returns this result without throwing an outage status for transport or parsing failures.
+
 ## Testing Strategy
 
 - Unit-test JSON manifest validation and each parser against checked-in response fixtures.
