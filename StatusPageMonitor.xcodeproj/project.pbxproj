@@ -22,6 +22,9 @@
 			knownRegions = (en, Base,);
 			mainGroup = 5E43193684054357A3913BF6;
 			productRefGroup = 87EAB99AD8D143169C8D558D /* Products */;
+			packageReferences = (
+				F001A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -39,6 +42,9 @@
 			);
 			buildRules = ();
 			dependencies = ();
+			packageProductDependencies = (
+				F002A0D180354684A8BA6A11 /* SwiftSoup */,
+			);
 			name = StatusPageMonitor;
 			productName = StatusPageMonitor;
 			productReference = C8E8A6D118BD4AD482D5BE14 /* StatusPageMonitor.app */;
@@ -77,14 +83,24 @@
 			children = (
 				C101A0D180354684A8BA6A11 /* StatusProvider.swift */,
 				C102A0D180354684A8BA6A11 /* BuiltInServiceCatalog.swift */,
+				C003A0D180354684A8BA6A11 /* JSON */,
 			);
 			path = Sources/ServiceProviders;
+			sourceTree = "<group>";
+		};
+		C003A0D180354684A8BA6A11 /* JSON */ = {
+			isa = PBXGroup;
+			children = (
+				C103A0D180354684A8BA6A11 /* ProviderManifest.swift */,
+			);
+			path = JSON;
 			sourceTree = "<group>";
 		};
 		C002A0D180354684A8BA6A11 /* ServiceProvidersTests */ = {
 			isa = PBXGroup;
 			children = (
 				C201A0D180354684A8BA6A11 /* ProviderContractTests.swift */,
+				C202A0D180354684A8BA6A11 /* ProviderManifestTests.swift */,
 			);
 			path = Tests/ServiceProvidersTests;
 			sourceTree = "<group>";
@@ -128,6 +144,18 @@
 			path = ProviderContractTests.swift;
 			sourceTree = "<group>";
 		};
+		C103A0D180354684A8BA6A11 /* ProviderManifest.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ProviderManifest.swift;
+			sourceTree = "<group>";
+		};
+		C202A0D180354684A8BA6A11 /* ProviderManifestTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ProviderManifestTests.swift;
+			sourceTree = "<group>";
+		};
 		C8E8A6D118BD4AD482D5BE14 /* StatusPageMonitor.app */ = {
 			isa = PBXFileReference;
 			explicitFileType = wrapper.application;
@@ -162,6 +190,18 @@
 			isa = PBXBuildFile;
 			fileRef = C201A0D180354684A8BA6A11 /* ProviderContractTests.swift */;
 		};
+		D103A0D180354684A8BA6A11 /* ProviderManifest.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C103A0D180354684A8BA6A11 /* ProviderManifest.swift */;
+		};
+		D202A0D180354684A8BA6A11 /* ProviderManifestTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C202A0D180354684A8BA6A11 /* ProviderManifestTests.swift */;
+		};
+		D301A0D180354684A8BA6A11 /* SwiftSoup in Frameworks */ = {
+			isa = PBXBuildFile;
+			productRef = F002A0D180354684A8BA6A11 /* SwiftSoup */;
+		};
 		2D6F90D7767E4495AF0ACC1E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -169,13 +209,14 @@
 				0663D79D3D6E4E57BC743862 /* StatusPageMonitorApp.swift in Sources */,
 				D101A0D180354684A8BA6A11 /* StatusProvider.swift in Sources */,
 				D102A0D180354684A8BA6A11 /* BuiltInServiceCatalog.swift in Sources */,
+				D103A0D180354684A8BA6A11 /* ProviderManifest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		E3157B0ACB684C27854D9282 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
-			files = ();
+			files = (D301A0D180354684A8BA6A11 /* SwiftSoup in Frameworks */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9F91D8609F1745DB926B4A11 /* Resources */ = {
@@ -190,6 +231,7 @@
 			files = (
 				08B78BF94DE046B0A5B3292E /* AppShellTests.swift in Sources */,
 				D201A0D180354684A8BA6A11 /* ProviderContractTests.swift in Sources */,
+				D202A0D180354684A8BA6A11 /* ProviderManifestTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,6 +246,19 @@
 			buildActionMask = 2147483647;
 			files = ();
 			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F001A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scinfu/SwiftSoup.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.14.4;
+			};
+		};
+		F002A0D180354684A8BA6A11 /* SwiftSoup */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F001A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
+			productName = SwiftSoup;
 		};
 		26465E6363AE43A38759F3C4 /* Build configuration list for PBXProject */ = {
 			isa = XCConfigurationList;
@@ -228,6 +283,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
@@ -252,6 +308,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
 				INFOPLIST_KEY_LSUIElement = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
@@ -278,6 +335,7 @@
 					CODE_SIGNING_ALLOWED = NO;
 					GENERATE_INFOPLIST_FILE = YES;
 					MACOSX_DEPLOYMENT_TARGET = 13.0;
+					ONLY_ACTIVE_ARCH = YES;
 					PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac.tests;
 					PRODUCT_NAME = "$(TARGET_NAME)";
 					SWIFT_VERSION = 6.0;

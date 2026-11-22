@@ -66,15 +66,15 @@ Tasks are ordered by dependency. Complete each provider and its tutorial before 
 **Description:** Define a versioned JSON schema and decoder for the supported declarative check patterns, with clear validation errors for unsupported or incomplete definitions.
 
 **Acceptance criteria:**
-- [ ] Valid definitions can describe only documented JSON or HTML patterns.
-- [ ] Invalid versions, URLs, selectors, mappings, and required fields fail validation with actionable errors.
-- [ ] Definitions cannot execute scripts or arbitrary code.
+- [x] Valid definitions can describe only documented JSON or HTML patterns.
+- [x] Invalid versions, URLs, selectors, mappings, and required fields fail validation with actionable errors.
+- [x] Definitions cannot execute scripts or arbitrary code.
 
-**Verification:** Run schema/decoder tests for valid examples and malformed or unsupported definitions.
+**Verification:** `xcodebuild -quiet -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -destination platform=macOS,arch=arm64 -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages test ONLY_ACTIVE_ARCH=YES` passed all 18 app and provider tests. Decoder coverage includes JSON and HTML examples, unsupported versions/methods, unsafe and non-HTTPS URLs, missing and explicit-null fields, unknown fields/states, malformed JSON Pointers/selectors, format mismatches, and oversized manifests. `python3 -m json.tool Documentation/providers/provider-manifest-v1.schema.json` and both example manifests parsed successfully.
 
 **Dependencies:** Task 3.
 
-**Files likely touched:** `Sources/ServiceProviders/JSON/`, `Documentation/providers/`, `Tests/ServiceProvidersTests/`.
+**Files touched:** `Sources/ServiceProviders/JSON/`, `Documentation/providers/`, `Tests/ServiceProvidersTests/`, `StatusPageMonitor.xcodeproj/`, `README.md`, `SPEC-service-providers.md`, and this task list.
 
 **Estimated scope:** Medium.
 

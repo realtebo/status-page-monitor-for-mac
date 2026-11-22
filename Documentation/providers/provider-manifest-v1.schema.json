@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://status-page-monitor.example/schemas/provider-manifest-v1.schema.json",
+  "title": "Status Page Monitor provider manifest, version 1",
+  "description": "A bounded declarative HTTPS GET check. It cannot run code.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "service", "check"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "service": { "$ref": "#/$defs/service" },
+    "check": { "$ref": "#/$defs/check" }
+  },
+  "$defs": {
+    "serviceID": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z](?:[a-z0-9-]{0,62}[a-z0-9])?$",
+      "description": "A stable lowercase ASCII slug. A single lowercase letter is valid."
+    },
+    "displayText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "\\S"
+    },
+    "httpsURL": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048,
+      "pattern": "^https://(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?::[0-9]{1,5})?(?:[/?][^#]*|\\?[^#]*)?$",
+      "description": "An absolute HTTPS URL on a DNS hostname. Runtime validation also rejects IP literals and local hostnames."
+    },
+    "jsonPointer": {
+      "type": "string",
+      "maxLength": 1024,
+      "pattern": "^(?:/(?:[^~/]|~[01])*)*$",
+      "description": "An RFC 6901 JSON Pointer. The empty string selects the document root."
+    },
+    "serviceCondition": {
+      "type": "string",
+      "enum": ["operational", "degradedPerformance", "partialOutage", "majorOutage", "maintenance"]
+    },
+    "incidentStatus": {
+      "type": "string",
+      "enum": ["investigating", "identified", "monitoring", "scheduled", "inProgress", "verifying"]
+    },
+    "incidentImpact": {
+      "type": "string",
+      "enum": ["none", "minor", "major", "critical", "maintenance"]
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "displayName", "statusPageURL", "attribution"],
+      "properties": {
+        "id": { "$ref": "#/$defs/serviceID" },
+        "displayName": { "$ref": "#/$defs/displayText" },
+        "statusPageURL": { "$ref": "#/$defs/httpsURL" },
+        "attribution": { "$ref": "#/$defs/attribution" }
+      }
+    },
+    "attribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["publisherName"],
+      "properties": {
+        "publisherName": { "$ref": "#/$defs/displayText" }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "requestURL", "format"],
+      "properties": {
+        "method": { "const": "GET" },
+        "requestURL": { "$ref": "#/$defs/httpsURL" },
+        "format": { "enum": ["json", "html"] },
+        "json": { "$ref": "#/$defs/jsonCheck" },
+        "html": { "$ref": "#/$defs/htmlCheck" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "format": { "const": "json" } }, "required": ["format"] },
+          "then": { "required": ["json"], "not": { "required": ["html"] } }
+        },
+        {
+          "if": { "properties": { "format": { "const": "html" } }, "required": ["format"] },
+          "then": { "required": ["html"], "not": { "required": ["json"] } }
+        }
+      ]
+    },
+    "jsonCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition"],
+      "properties": {
+        "condition": { "$ref": "#/$defs/jsonConditionMapping" },
+        "incidents": { "$ref": "#/$defs/jsonIncidentCollection" }
+      }
+    },
+    "jsonConditionMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "values"],
+      "properties": {
+        "pointer": { "$ref": "#/$defs/jsonPointer" },
+        "values": { "$ref": "#/$defs/serviceConditionValues" }
+      }
+    },
+    "serviceConditionValues": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 64,
+      "propertyNames": { "minLength": 1, "pattern": "\\S" },
+      "additionalProperties": { "$ref": "#/$defs/serviceCondition" }
+    },
+    "incidentStatusValues": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 64,
+      "propertyNames": { "minLength": 1, "pattern": "\\S" },
+      "additionalProperties": { "$ref": "#/$defs/incidentStatus" }
+    },
+    "incidentImpactValues": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 64,
+      "propertyNames": { "minLength": 1, "pattern": "\\S" },
+      "additionalProperties": { "$ref": "#/$defs/incidentImpact" }
+    },
+    "jsonIncidentCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "titlePointer"],
+      "properties": {
+        "pointer": { "$ref": "#/$defs/jsonPointer" },
+        "idPointer": { "$ref": "#/$defs/jsonPointer" },
+        "titlePointer": { "$ref": "#/$defs/jsonPointer" },
+        "status": { "$ref": "#/$defs/jsonIncidentStatusMapping" },
+        "impact": { "$ref": "#/$defs/jsonIncidentImpactMapping" },
+        "summaryPointer": { "$ref": "#/$defs/jsonPointer" },
+        "urlPointer": { "$ref": "#/$defs/jsonPointer" },
+        "startedAtPointer": { "$ref": "#/$defs/jsonPointer" },
+        "updatedAtPointer": { "$ref": "#/$defs/jsonPointer" }
+      }
+    },
+    "jsonIncidentStatusMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "values"],
+      "properties": {
+        "pointer": { "$ref": "#/$defs/jsonPointer" },
+        "values": { "$ref": "#/$defs/incidentStatusValues" }
+      }
+    },
+    "jsonIncidentImpactMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "values"],
+      "properties": {
+        "pointer": { "$ref": "#/$defs/jsonPointer" },
+        "values": { "$ref": "#/$defs/incidentImpactValues" }
+      }
+    },
+    "htmlCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition"],
+      "properties": {
+        "condition": { "$ref": "#/$defs/htmlConditionMapping" },
+        "incidents": { "$ref": "#/$defs/htmlIncidentCollection" }
+      }
+    },
+    "htmlConditionMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selector", "source", "values"],
+      "properties": {
+        "selector": { "$ref": "#/$defs/cssSelector" },
+        "source": { "$ref": "#/$defs/htmlValueSource" },
+        "values": { "$ref": "#/$defs/serviceConditionValues" }
+      }
+    },
+    "cssSelector": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "\\S"
+    },
+    "htmlValueSource": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "const": "text" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "name"],
+          "properties": {
+            "type": { "const": "attribute" },
+            "name": { "$ref": "#/$defs/htmlAttributeName" }
+          }
+        }
+      ]
+    },
+    "htmlAttributeName": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[A-Za-z_:][A-Za-z0-9_.:-]*$"
+    },
+    "incidentStatusHTMLMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selector", "source", "values"],
+      "properties": {
+        "selector": { "$ref": "#/$defs/cssSelector" },
+        "source": { "$ref": "#/$defs/htmlValueSource" },
+        "values": { "$ref": "#/$defs/incidentStatusValues" }
+      }
+    },
+    "incidentImpactHTMLMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selector", "source", "values"],
+      "properties": {
+        "selector": { "$ref": "#/$defs/cssSelector" },
+        "source": { "$ref": "#/$defs/htmlValueSource" },
+        "values": { "$ref": "#/$defs/incidentImpactValues" }
+      }
+    },
+    "htmlIncidentCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["titleSelector"],
+      "properties": {
+        "titleSelector": { "$ref": "#/$defs/cssSelector" },
+        "idAttribute": { "$ref": "#/$defs/htmlAttributeName" },
+        "status": { "$ref": "#/$defs/incidentStatusHTMLMapping" },
+        "impact": { "$ref": "#/$defs/incidentImpactHTMLMapping" },
+        "summarySelector": { "$ref": "#/$defs/cssSelector" },
+        "urlAttribute": { "$ref": "#/$defs/htmlAttributeName" }
+      }
+    }
+  }
+}

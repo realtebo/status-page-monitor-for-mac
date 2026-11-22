@@ -140,3 +140,18 @@ private struct StubStatusProvider: StatusProvider {
         )
     }
 }
+
+@Test func serviceIDsAcceptValidatedCommunitySlugs() {
+    #expect(ServiceID(rawValue: "community-status")?.rawValue == "community-status")
+    #expect(ServiceID(rawValue: "aircall") == .aircall)
+}
+
+@Test func serviceIDsRejectMalformedValuesDuringConstructionAndDecoding() {
+    let invalidIDs = ["", "Uppercase", "two words", "-leading", "trailing-"]
+
+    #expect(invalidIDs.allSatisfy { ServiceID(rawValue: $0) == nil })
+
+    let data = Data(#""Uppercase""#.utf8)
+    let decodedID = try? JSONDecoder().decode(ServiceID.self, from: data)
+    #expect(decodedID == nil)
+}

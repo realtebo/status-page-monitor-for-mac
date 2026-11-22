@@ -29,7 +29,7 @@ Define a stable contract between the monitoring engine and integrations that rea
 
 - Swift and Swift Concurrency for provider implementations.
 - Foundation `URLSession` and `JSONDecoder` for HTTP and JSON responses.
-- A documented, versioned JSON schema for supported declarative checks.
+- A documented, versioned JSON Schema for supported declarative checks at `Documentation/providers/provider-manifest-v1.schema.json`.
 - SwiftSoup 2.14.4 or compatible later 2.x releases for CSS-selector HTML parsing without a browser view in the polling path.
 - Provider manifest schema version 1: HTTPS GET, JSON Pointer field extraction and incident collections, or HTML CSS selectors for text/attribute extraction; all status mappings are explicit.
 - Provider implementations reject unknown response shapes and states as check failures. Use Swift for service-specific rules outside the finite JSON schema.
@@ -96,6 +96,14 @@ protocol StatusProvider: Sendable {
     func check(at date: Date) async -> ProviderCheckResult
 }
 ```
+
+### Version 1 provider manifests
+
+The manifest decoder accepts only the fields documented in the checked-in schema. Each file declares `schemaVersion`, service identity and attribution, then a GET check with one response format. JSON manifests select values with RFC 6901 JSON Pointers. HTML manifests select elements with CSS and read either text or a named attribute. Optional incident collections use the same explicit field mappings. JSON and HTML blocks cannot be mixed in one check.
+
+`ServiceID` is a validated lowercase ASCII slug of at most 64 bytes, so community providers can use new stable ids without editing a closed enum. The built-in catalog still defines the 16 ids listed above. The decoder rejects unknown fields and explicit `null` for optional properties, unsupported mappings, invalid selectors, malformed or local URLs, and manifests larger than 65,536 bytes. JSON Pointers are limited to 128 segments and 1,024 UTF-8 bytes; selectors to 512 characters; mappings to 64 entries. See the [manifest authoring guide](Documentation/providers/README.md) and its [JSON example](Documentation/providers/examples/json-status-provider.json) and [HTML example](Documentation/providers/examples/html-status-provider.json).
+
+The manifest is data only. It has no script, expression, custom-header, credential, or arbitrary-code fields. Transport code must apply response-size and redirect checks before requesting its configured endpoint. A page-specific rule outside the finite schema belongs in reviewed Swift provider code.
 
 `ProviderCheckResult` distinguishes a valid service observation from a failed check. A valid observation contains the overall condition and active incidents; a failed check contains a typed reason and timestamp. Missing or unrecognized required fields are check failures, never an implicit healthy state.
 

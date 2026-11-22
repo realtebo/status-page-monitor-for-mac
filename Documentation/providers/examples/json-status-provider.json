@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "service": {
+    "id": "community-status",
+    "displayName": "Community Status",
+    "statusPageURL": "https://status.example.com/",
+    "attribution": {
+      "publisherName": "Example Vendor"
+    }
+  },
+  "check": {
+    "method": "GET",
+    "requestURL": "https://status.example.com/api/v2/summary.json",
+    "format": "json",
+    "json": {
+      "condition": {
+        "pointer": "/status/indicator",
+        "values": {
+          "none": "operational",
+          "minor": "degradedPerformance",
+          "major": "majorOutage"
+        }
+      },
+      "incidents": {
+        "pointer": "/incidents",
+        "idPointer": "/id",
+        "titlePointer": "/name",
+        "status": {
+          "pointer": "/status",
+          "values": {
+            "investigating": "investigating",
+            "identified": "identified",
+            "monitoring": "monitoring"
+          }
+        },
+        "impact": {
+          "pointer": "/impact",
+          "values": {
+            "critical": "critical",
+            "minor": "minor"
+          }
+        },
+        "summaryPointer": "/body",
+        "urlPointer": "/shortlink",
+        "startedAtPointer": "/created_at",
+        "updatedAtPointer": "/updated_at"
+      }
+    }
+  }
+}

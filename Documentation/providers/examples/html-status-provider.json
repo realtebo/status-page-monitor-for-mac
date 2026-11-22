@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "service": {
+    "id": "html-example",
+    "displayName": "HTML Example",
+    "statusPageURL": "https://status.example.com/",
+    "attribution": {
+      "publisherName": "Example Vendor"
+    }
+  },
+  "check": {
+    "method": "GET",
+    "requestURL": "https://status.example.com/",
+    "format": "html",
+    "html": {
+      "condition": {
+        "selector": "main .overall-status[data-state]",
+        "source": {
+          "type": "attribute",
+          "name": "data-state"
+        },
+        "values": {
+          "operational": "operational",
+          "partial_outage": "partialOutage",
+          "major_outage": "majorOutage",
+          "maintenance": "maintenance"
+        }
+      },
+      "incidents": {
+        "titleSelector": "section.incidents h3",
+        "idAttribute": "data-incident-id",
+        "summarySelector": "p.incident-summary",
+        "urlAttribute": "href"
+      }
+    }
+  }
+}
