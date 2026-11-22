@@ -1,0 +1,261 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+		7A180E66D76642A29DE0D597 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					A494CD93BC284F53891755BF = { CreatedOnToolsVersion = 27.2; };
+					AABBE06ED76B4922AC9D6756 = { CreatedOnToolsVersion = 27.2; TestTargetID = A494CD93BC284F53891755BF; };
+				};
+			};
+			buildConfigurationList = 26465E6363AE43A38759F3C4 /* Build configuration list for PBXProject */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base,);
+			mainGroup = 5E43193684054357A3913BF6;
+			productRefGroup = 87EAB99AD8D143169C8D558D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A494CD93BC284F53891755BF /* StatusPageMonitor */,
+				AABBE06ED76B4922AC9D6756 /* StatusPageMonitorAppTests */,
+			);
+		};
+		A494CD93BC284F53891755BF /* StatusPageMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01A3942157B4CD48994ED49 /* Build configuration list for PBXNativeTarget "StatusPageMonitor" */;
+			buildPhases = (
+				2D6F90D7767E4495AF0ACC1E /* Sources */,
+				E3157B0ACB684C27854D9282 /* Frameworks */,
+				9F91D8609F1745DB926B4A11 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = StatusPageMonitor;
+			productName = StatusPageMonitor;
+			productReference = C8E8A6D118BD4AD482D5BE14 /* StatusPageMonitor.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AABBE06ED76B4922AC9D6756 /* StatusPageMonitorAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 698BFF4FCC774EBB85F3C68C /* Build configuration list for PBXNativeTarget "StatusPageMonitorAppTests" */;
+			buildPhases = (
+				7455FDE590B84BFDAEE03A49 /* Sources */,
+				7D0F6B13045D4CFA8B261008 /* Frameworks */,
+				F3EAC8B1F8A84537BA17F1E7 /* Resources */,
+			);
+			buildRules = ();
+			dependencies = (
+				4C8A29930652403396F3BCAD /* PBXTargetDependency */,
+			);
+			name = StatusPageMonitorAppTests;
+			productName = StatusPageMonitorAppTests;
+			productReference = BE641BF17B5B455692D8F1CE /* StatusPageMonitorAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5E43193684054357A3913BF6 /* Main group */ = {
+			isa = PBXGroup;
+			children = (
+				DEC2C9ED38BE4F7F9A3A5197 /* StatusPageMonitorApp.swift */,
+				F2147DD99F4B4D54BE265651 /* AppShellTests.swift */,
+				87EAB99AD8D143169C8D558D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		87EAB99AD8D143169C8D558D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C8E8A6D118BD4AD482D5BE14 /* StatusPageMonitor.app */,
+				BE641BF17B5B455692D8F1CE /* StatusPageMonitorAppTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DEC2C9ED38BE4F7F9A3A5197 /* StatusPageMonitorApp.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Sources/StatusPageMonitorApp/StatusPageMonitorApp.swift;
+			sourceTree = "<group>";
+		};
+		F2147DD99F4B4D54BE265651 /* AppShellTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Tests/StatusPageMonitorAppTests/AppShellTests.swift;
+			sourceTree = "<group>";
+		};
+		C8E8A6D118BD4AD482D5BE14 /* StatusPageMonitor.app */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = StatusPageMonitor.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BE641BF17B5B455692D8F1CE /* StatusPageMonitorAppTests.xctest */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = StatusPageMonitorAppTests.xctest;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0663D79D3D6E4E57BC743862 /* StatusPageMonitorApp.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = DEC2C9ED38BE4F7F9A3A5197 /* StatusPageMonitorApp.swift */;
+		};
+		08B78BF94DE046B0A5B3292E /* AppShellTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = F2147DD99F4B4D54BE265651 /* AppShellTests.swift */;
+		};
+		2D6F90D7767E4495AF0ACC1E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (0663D79D3D6E4E57BC743862 /* StatusPageMonitorApp.swift in Sources */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E3157B0ACB684C27854D9282 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9F91D8609F1745DB926B4A11 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7455FDE590B84BFDAEE03A49 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (08B78BF94DE046B0A5B3292E /* AppShellTests.swift in Sources */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7D0F6B13045D4CFA8B261008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3EAC8B1F8A84537BA17F1E7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		26465E6363AE43A38759F3C4 /* Build configuration list for PBXProject */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (E97E33EF9FC7403F81B87E96 /* Debug */, 5AD2B0C873A34A99837AE87C /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01A3942157B4CD48994ED49 /* Build configuration list for PBXNativeTarget "StatusPageMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (7CE36A31956A414FAC9A77ED /* Debug */, 6A432B303DB1451CBD56CCF8 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		698BFF4FCC774EBB85F3C68C /* Build configuration list for PBXNativeTarget "StatusPageMonitorAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (6E43A7C67C73456882A7DF4F /* Debug */, ED78C2796EE44A7D9F56F623 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E97E33EF9FC7403F81B87E96 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		5AD2B0C873A34A99837AE87C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		7CE36A31956A414FAC9A77ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				ENABLE_TESTABILITY = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
+				INFOPLIST_KEY_LSUIElement = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		6A432B303DB1451CBD56CCF8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
+				INFOPLIST_KEY_LSUIElement = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		6E43A7C67C73456882A7DF4F /* Debug */ = {
+			isa = XCBuildConfiguration;
+				buildSettings = {
+					CODE_SIGNING_ALLOWED = NO;
+					GENERATE_INFOPLIST_FILE = YES;
+					MACOSX_DEPLOYMENT_TARGET = 13.0;
+					PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac.tests;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SWIFT_VERSION = 6.0;
+					TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StatusPageMonitor.app/Contents/MacOS/StatusPageMonitor";
+					BUNDLE_LOADER = "$(TEST_HOST)";
+				};
+			name = Debug;
+		};
+		ED78C2796EE44A7D9F56F623 /* Release */ = {
+			isa = XCBuildConfiguration;
+				buildSettings = {
+					CODE_SIGNING_ALLOWED = NO;
+					GENERATE_INFOPLIST_FILE = YES;
+					MACOSX_DEPLOYMENT_TARGET = 13.0;
+					PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac.tests;
+					PRODUCT_NAME = "$(TARGET_NAME)";
+					SWIFT_VERSION = 6.0;
+					TEST_HOST = "$(BUILT_PRODUCTS_DIR)/StatusPageMonitor.app/Contents/MacOS/StatusPageMonitor";
+					BUNDLE_LOADER = "$(TEST_HOST)";
+				};
+			name = Release;
+		};
+		50DAFD5B916E44CC9F153481 /* Container proxy for StatusPageMonitor */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7A180E66D76642A29DE0D597 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A494CD93BC284F53891755BF;
+			remoteInfo = StatusPageMonitor;
+		};
+		4C8A29930652403396F3BCAD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A494CD93BC284F53891755BF /* StatusPageMonitor */;
+			targetProxy = 50DAFD5B916E44CC9F153481 /* Container proxy for StatusPageMonitor */;
+		};
+	};
+	rootObject = 7A180E66D76642A29DE0D597 /* Project object */;
+}

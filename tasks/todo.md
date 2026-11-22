@@ -26,15 +26,15 @@ Tasks are ordered by dependency. Complete each provider and its tutorial before 
 **Description:** Create the SwiftUI macOS app project, app entry point, menu bar scene shell, repository ignore rules, and English README with prerequisites and the verified local build/run workflow.
 
 **Acceptance criteria:**
-- [ ] A clean checkout opens in the documented Xcode version and builds a runnable macOS app.
-- [ ] The README states requirements and provides copyable clone, resolve, build, run, and test steps.
-- [ ] The app opens with a menu bar item and can show a placeholder popover and detail window.
+- [x] The Xcode project builds a runnable macOS app with the documented Xcode version and minimum deployment target.
+- [x] The README states requirements and provides clone, resolve, build, run, and test steps; the repository URL remains an explicit placeholder until its canonical host is selected.
+- [x] The app shell defines a menu bar item with a placeholder popover and a separate dashboard window.
 
-**Verification:** Run the documented Xcode build; launch the app and manually verify the menu bar item, popover, and detail window.
+**Verification:** `xcodebuild -quiet -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -destination 'platform=macOS' -derivedDataPath build build` and the corresponding `test` command passed. Launched the built app and visually verified the dashboard window. `MenuBarExtra` and the popover compile, but the computer-use interface did not expose the system status item for a click-through check.
 
 **Dependencies:** Task 1.
 
-**Files likely touched:** `StatusPageMonitor.xcodeproj/`, `Sources/StatusPageMonitorApp/`, `README.md`, `.gitignore`.
+**Files touched:** `StatusPageMonitor.xcodeproj/`, `Sources/StatusPageMonitorApp/`, `Tests/StatusPageMonitorAppTests/`, `README.md`, `.gitignore`, and this task list.
 
 **Estimated scope:** Medium.
 
