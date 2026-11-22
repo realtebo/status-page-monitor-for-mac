@@ -31,7 +31,7 @@ open build/Build/Products/Debug/StatusPageMonitor.app
 ### Run tests
 
 ```bash
-xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -destination 'platform=macOS' -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages test ONLY_ACTIVE_ARCH=YES
+xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -configuration Debug -destination 'platform=macOS' -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages test ONLY_ACTIVE_ARCH=YES
 ```
 
 The checked-in Swift package lockfile pins dependency versions. Package sources and build products are kept under `build/` by these commands.
@@ -39,7 +39,7 @@ The checked-in Swift package lockfile pins dependency versions. Package sources 
 ## Project Structure
 
 - `Sources/StatusPageMonitorApp/` — native SwiftUI application and menu bar interface
-- `Sources/ServiceProviders/` — shared provider contract, built-in service catalog, and provider-definition decoder
+- `Sources/ServiceProviders/` — shared provider contract, built-in catalog, URL policy, bounded HTTP transport, and JSON/HTML parsers
 - `Tests/StatusPageMonitorAppTests/` — app-level tests
 - `Tests/ServiceProvidersTests/` — provider contract, catalog, and manifest validation tests
 - `Documentation/providers/` — manifest schema, examples, authoring notes, and provider tutorials

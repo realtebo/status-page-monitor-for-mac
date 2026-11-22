@@ -17,9 +17,9 @@ Make the public repository understandable to developers and provide a predictabl
 The README must publish verified commands for:
 
 ```bash
-xcodebuild -resolvePackageDependencies -project StatusPageMonitor.xcodeproj
-xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -configuration Debug build
-xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -destination 'platform=macOS' test
+xcodebuild -resolvePackageDependencies -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages
+xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -configuration Debug -destination 'platform=macOS' -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages build ONLY_ACTIVE_ARCH=YES
+xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -configuration Debug -destination 'platform=macOS' -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages test ONLY_ACTIVE_ARCH=YES
 ```
 
 The README must identify the minimum macOS version, Xcode version, Swift version, and package prerequisites, matching [ADR-001](Documentation/architecture/decisions/ADR-001-platform-and-provider-format.md).

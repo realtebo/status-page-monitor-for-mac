@@ -202,7 +202,6 @@ enum ProviderManifestDecoder {
     static let maximumJSONPointerBytes = 1_024
     static let maximumJSONPointerDepth = 128
     private static let maximumDisplayTextLength = 80
-    private static let maximumURLLength = 2_048
     private static let maximumSelectorLength = 512
     private static let maximumAttributeNameLength = 128
     private static let maximumMappingValues = 64
@@ -504,7 +503,7 @@ enum ProviderManifestDecoder {
     }
 
     private static func validatedHTTPSURL(_ value: String, field: String) throws -> URL {
-        guard value.utf8.count <= maximumURLLength,
+        guard value.utf8.count <= ProviderURLPolicy.maximumURLBytes,
               let components = URLComponents(string: value),
               let url = components.url,
               components.scheme?.lowercased() == "https",
@@ -516,56 +515,11 @@ enum ProviderManifestDecoder {
             throw ProviderManifestError.invalidURL(field: field)
         }
 
-        guard !isUnsafeHost(host) else {
+        guard ProviderURLPolicy.isPublicDNSHost(host) else {
             throw ProviderManifestError.unsafeURLHost(field: field)
         }
 
         return url
-    }
-
-    private static func isUnsafeHost(_ host: String) -> Bool {
-        let normalizedHost = host.hasSuffix(".") ? String(host.dropLast()) : host
-        let localSuffixes = [".localhost", ".local", ".internal", ".lan", ".home.arpa"]
-
-        if normalizedHost == "localhost"
-            || normalizedHost.contains(":")
-            || normalizedHost.utf8.count > 253 {
-            return true
-        }
-        if localSuffixes.contains(where: normalizedHost.hasSuffix) {
-            return true
-        }
-
-        let labels = normalizedHost.split(separator: ".", omittingEmptySubsequences: false)
-        guard labels.count >= 2,
-              labels.allSatisfy(isValidDNSLabel),
-              let topLevelLabel = labels.last,
-              topLevelLabel.utf8.contains(where: isASCIILetter) else {
-            return true
-        }
-
-        return false
-    }
-
-    private static func isValidDNSLabel(_ label: Substring) -> Bool {
-        let bytes = Array(label.utf8)
-        guard (1...63).contains(bytes.count),
-              let first = bytes.first,
-              let last = bytes.last,
-              isASCIILetter(first) || isASCIIDigit(first),
-              isASCIILetter(last) || isASCIIDigit(last) else {
-            return false
-        }
-
-        return bytes.allSatisfy { isASCIILetter($0) || isASCIIDigit($0) || $0 == 45 }
-    }
-
-    private static func isASCIILetter(_ byte: UInt8) -> Bool {
-        (65...90).contains(byte) || (97...122).contains(byte)
-    }
-
-    private static func isASCIIDigit(_ byte: UInt8) -> Bool {
-        (48...57).contains(byte)
     }
 
     private static func validatedSelector(_ value: String, field: String) throws -> String {

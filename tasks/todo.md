@@ -83,15 +83,15 @@ Tasks are ordered by dependency. Complete each provider and its tutorial before 
 **Description:** Implement bounded HTTP requests, response validation, and the selected HTML parser support used by declarative and Swift providers.
 
 **Acceptance criteria:**
-- [ ] HTTP status, timeout, decoding, and parsing failures map to typed check failures.
-- [ ] HTML extraction supports the documented selector features without embedding a browser in the check path.
-- [ ] Network and parser code can be exercised with deterministic fixtures or fakes.
+- [x] HTTP status, timeout, decoding, and parsing failures map to typed check failures.
+- [x] HTML extraction supports the documented selector features without embedding a browser in the check path.
+- [x] Network and parser code can be exercised with deterministic fixtures or fakes.
 
-**Verification:** Run focused transport/parser tests for valid responses, HTTP errors, malformed data, and missing selectors.
+**Verification:** The README's documented Debug test command passed all 29 app and provider tests. Focused coverage checks bounded response accumulation, HTTP status/size validation, HTTPS redirect policy, invalid endpoint rejection before I/O, typed timeout/HTTP/JSON/HTML failures, JSON Pointer traversal, and HTML selectors against in-memory fixtures. The HTTP client uses `URLSession.AsyncBytes`; no live vendor requests are part of the suite.
 
 **Dependencies:** Tasks 1, 3, and 4.
 
-**Files likely touched:** `Sources/ServiceProviders/HTTP/`, `Sources/ServiceProviders/HTML/`, `Tests/ServiceProvidersTests/`.
+**Files touched:** `Sources/ServiceProviders/ProviderFailure.swift`, `Sources/ServiceProviders/ProviderURLPolicy.swift`, `Sources/ServiceProviders/HTTP/`, `Sources/ServiceProviders/HTML/`, `Sources/ServiceProviders/JSON/`, `Tests/ServiceProvidersTests/`, `StatusPageMonitor.xcodeproj/project.pbxproj`, `README.md`, `SPEC-service-providers.md`, `SPEC-community-contributions.md`, `Documentation/providers/README.md`, `Documentation/architecture/decisions/ADR-001-platform-and-provider-format.md`, and this task list.
 
 **Estimated scope:** Medium.
 

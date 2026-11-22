@@ -82,8 +82,12 @@
 			isa = PBXGroup;
 			children = (
 				C101A0D180354684A8BA6A11 /* StatusProvider.swift */,
+				C109A0D180354684A8BA6A11 /* ProviderFailure.swift */,
 				C102A0D180354684A8BA6A11 /* BuiltInServiceCatalog.swift */,
+				C104A0D180354684A8BA6A11 /* ProviderURLPolicy.swift */,
 				C003A0D180354684A8BA6A11 /* JSON */,
+				C004A0D180354684A8BA6A11 /* HTTP */,
+				C005A0D180354684A8BA6A11 /* HTML */,
 			);
 			path = Sources/ServiceProviders;
 			sourceTree = "<group>";
@@ -92,8 +96,26 @@
 			isa = PBXGroup;
 			children = (
 				C103A0D180354684A8BA6A11 /* ProviderManifest.swift */,
+				C107A0D180354684A8BA6A11 /* JSONResponseParser.swift */,
 			);
 			path = JSON;
+			sourceTree = "<group>";
+		};
+		C004A0D180354684A8BA6A11 /* HTTP */ = {
+			isa = PBXGroup;
+			children = (
+				C105A0D180354684A8BA6A11 /* HTTPTransport.swift */,
+				C106A0D180354684A8BA6A11 /* HTTPResponseLimits.swift */,
+			);
+			path = HTTP;
+			sourceTree = "<group>";
+		};
+		C005A0D180354684A8BA6A11 /* HTML */ = {
+			isa = PBXGroup;
+			children = (
+				C108A0D180354684A8BA6A11 /* HTMLStatusPageParser.swift */,
+			);
+			path = HTML;
 			sourceTree = "<group>";
 		};
 		C002A0D180354684A8BA6A11 /* ServiceProvidersTests */ = {
@@ -101,6 +123,7 @@
 			children = (
 				C201A0D180354684A8BA6A11 /* ProviderContractTests.swift */,
 				C202A0D180354684A8BA6A11 /* ProviderManifestTests.swift */,
+				C203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift */,
 			);
 			path = Tests/ServiceProvidersTests;
 			sourceTree = "<group>";
@@ -156,6 +179,48 @@
 			path = ProviderManifestTests.swift;
 			sourceTree = "<group>";
 		};
+		C104A0D180354684A8BA6A11 /* ProviderURLPolicy.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ProviderURLPolicy.swift;
+			sourceTree = "<group>";
+		};
+		C105A0D180354684A8BA6A11 /* HTTPTransport.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = HTTPTransport.swift;
+			sourceTree = "<group>";
+		};
+		C106A0D180354684A8BA6A11 /* HTTPResponseLimits.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = HTTPResponseLimits.swift;
+			sourceTree = "<group>";
+		};
+		C107A0D180354684A8BA6A11 /* JSONResponseParser.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = JSONResponseParser.swift;
+			sourceTree = "<group>";
+		};
+		C108A0D180354684A8BA6A11 /* HTMLStatusPageParser.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = HTMLStatusPageParser.swift;
+			sourceTree = "<group>";
+		};
+		C109A0D180354684A8BA6A11 /* ProviderFailure.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ProviderFailure.swift;
+			sourceTree = "<group>";
+		};
+		C203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = RuntimeParsingTests.swift;
+			sourceTree = "<group>";
+		};
 		C8E8A6D118BD4AD482D5BE14 /* StatusPageMonitor.app */ = {
 			isa = PBXFileReference;
 			explicitFileType = wrapper.application;
@@ -198,6 +263,34 @@
 			isa = PBXBuildFile;
 			fileRef = C202A0D180354684A8BA6A11 /* ProviderManifestTests.swift */;
 		};
+		D104A0D180354684A8BA6A11 /* ProviderURLPolicy.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C104A0D180354684A8BA6A11 /* ProviderURLPolicy.swift */;
+		};
+		D105A0D180354684A8BA6A11 /* HTTPTransport.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C105A0D180354684A8BA6A11 /* HTTPTransport.swift */;
+		};
+		D106A0D180354684A8BA6A11 /* HTTPResponseLimits.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C106A0D180354684A8BA6A11 /* HTTPResponseLimits.swift */;
+		};
+		D107A0D180354684A8BA6A11 /* JSONResponseParser.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C107A0D180354684A8BA6A11 /* JSONResponseParser.swift */;
+		};
+		D108A0D180354684A8BA6A11 /* HTMLStatusPageParser.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C108A0D180354684A8BA6A11 /* HTMLStatusPageParser.swift */;
+		};
+		D109A0D180354684A8BA6A11 /* ProviderFailure.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C109A0D180354684A8BA6A11 /* ProviderFailure.swift */;
+		};
+		D203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift */;
+		};
 		D301A0D180354684A8BA6A11 /* SwiftSoup in Frameworks */ = {
 			isa = PBXBuildFile;
 			productRef = F002A0D180354684A8BA6A11 /* SwiftSoup */;
@@ -208,8 +301,14 @@
 			files = (
 				0663D79D3D6E4E57BC743862 /* StatusPageMonitorApp.swift in Sources */,
 				D101A0D180354684A8BA6A11 /* StatusProvider.swift in Sources */,
+				D109A0D180354684A8BA6A11 /* ProviderFailure.swift in Sources */,
 				D102A0D180354684A8BA6A11 /* BuiltInServiceCatalog.swift in Sources */,
+				D104A0D180354684A8BA6A11 /* ProviderURLPolicy.swift in Sources */,
 				D103A0D180354684A8BA6A11 /* ProviderManifest.swift in Sources */,
+				D105A0D180354684A8BA6A11 /* HTTPTransport.swift in Sources */,
+				D106A0D180354684A8BA6A11 /* HTTPResponseLimits.swift in Sources */,
+				D107A0D180354684A8BA6A11 /* JSONResponseParser.swift in Sources */,
+				D108A0D180354684A8BA6A11 /* HTMLStatusPageParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,6 +331,7 @@
 				08B78BF94DE046B0A5B3292E /* AppShellTests.swift in Sources */,
 				D201A0D180354684A8BA6A11 /* ProviderContractTests.swift in Sources */,
 				D202A0D180354684A8BA6A11 /* ProviderManifestTests.swift in Sources */,
+				D203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

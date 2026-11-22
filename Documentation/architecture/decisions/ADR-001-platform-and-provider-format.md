@@ -23,6 +23,7 @@ The app must behave as a persistent macOS menu bar utility, register itself to s
   - HTML responses read through CSS selectors, selecting text or a named attribute, with explicit value mappings and declared incident-title selectors.
   - Reject unsupported expressions, invalid manifests, missing required fields, and unrecognized service states as check failures.
   - Use a Swift provider for vendor-specific logic beyond this set. Never execute code from a manifest.
+- Use an ephemeral `URLSession` for HTTPS GET checks. Stream response bodies with a 2 MiB cap, use 20-second request and 30-second resource timeouts, accept only 2xx responses, and revalidate each of at most five redirects. Do not retain cookies or cached responses. Parse according to the manifest's declared response format, not a guessed `Content-Type`.
 - Run an initial check after onboarding completes and on each app launch, then continue at the configured interval.
 - Enable login startup on first install, with a user setting to turn it off.
 - Explain notification use after service selection and before requesting macOS notification permission. If permission is denied, keep monitoring and show status in the app.
@@ -47,6 +48,7 @@ The app must behave as a persistent macOS menu bar utility, register itself to s
 
 - macOS 13 is the minimum supported runtime; APIs that require a later version need an explicit availability decision.
 - HTML providers can share CSS-selector parsing and fixture tests.
+- Network, decoding, missing-field, and parsing errors remain typed check failures. URL hostname validation cannot pin the DNS address returned by the system resolver.
 - The JSON schema remains reviewable and safe to validate; unusual parsing remains ordinary, testable Swift code.
 - Contributors need the documented Xcode/Swift toolchain to build and run the app.
 - Hosting and release artifact publication can be selected independently before release preparation.
