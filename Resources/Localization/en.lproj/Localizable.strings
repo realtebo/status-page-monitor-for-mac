@@ -1,0 +1,81 @@
+/* Language settings */
+"Language" = "Language";
+"User interface" = "User interface";
+"System Default" = "System Default";
+"English" = "English";
+"Italian" = "Italian";
+
+/* App shell */
+"Status Page Monitor" = "Status Page Monitor";
+"Settings" = "Settings";
+"About" = "About";
+"Version" = "Version";
+"Created by Mirko Tebaldi" = "Created by Mirko Tebaldi";
+"Contact" = "Contact";
+"Quit Status Page Monitor" = "Quit Status Page Monitor";
+"%lld services operational" = "%lld services operational";
+"%lld services ok" = "%lld services operational";
+"%lld servizi ok" = "%lld services operational";
+"🟢 %lld servizi ok" = "🟢 %lld services operational";
+"No services enabled" = "No services enabled";
+"Nessun servizio ok." = "No services operational.";
+
+/* Monitoring configuration */
+"Select a settings section" = "Select a settings section";
+"The enabled provider is checked as soon as the app starts and then at the selected interval." = "The enabled provider is checked as soon as the app starts and then at the selected interval.";
+"Online service providers" = "Online service providers";
+"Search providers" = "Search providers";
+"Clear search" = "Clear search";
+"No matching providers" = "No matching providers";
+"Check interval" = "Check interval";
+"%lld minutes" = "%lld minutes";
+"Minimum 15 minutes, in 5-minute steps." = "Minimum 15 minutes, in 5-minute steps.";
+"Schedule" = "Schedule";
+
+/* Provider rows */
+"Since %@" = "Since %@";
+"Last updated %@" = "Last updated %@";
+"Refresh %@" = "Refresh %@";
+"Open %@ status page" = "Open %@ status page";
+"Checking %@" = "Checking %@";
+"Check %@ now" = "Check %@ now";
+"Details" = "Details";
+
+/* Provider status */
+"Disabled" = "Disabled";
+"Checking" = "Checking";
+"Maintenance" = "Maintenance";
+"Active issue" = "Active issue";
+"Check failed" = "Check failed";
+"Waiting" = "Waiting";
+"Operational" = "Operational";
+"Degraded performance" = "Degraded performance";
+"Partial outage" = "Partial outage";
+"Major outage" = "Major outage";
+"No active incidents." = "No active incidents.";
+"Checked at %@" = "Checked at %@";
+"Attempted at %@" = "Attempted at %@";
+
+/* Provider errors and summaries */
+"Connection failed: %@" = "Connection failed: %@";
+"HTTP %lld response." = "HTTP %lld response.";
+"Invalid response: %@" = "Invalid response: %@";
+"Required field missing: %@" = "Required field missing: %@";
+"Unrecognized value '%@' at %@." = "Unrecognized value '%@' at %@.";
+"Provider configuration error: %@" = "Provider configuration error: %@";
+"The bundled Aircall configuration could not be found." = "The bundled Aircall configuration could not be found.";
+"Monitoring is disabled." = "Monitoring is disabled.";
+"Checking status…" = "Checking status…";
+"Active issue: %@" = "Active issue: %@";
+"Could not reach %@." = "Could not reach %@.";
+"Could not read %@ status." = "Could not read %@ status.";
+"Waiting for first check." = "Waiting for first check.";
+
+/* Manual refresh feedback */
+"The service is still operational." = "The service is still operational.";
+"The service is operational again." = "The service is operational again.";
+"The service is operational." = "The service is operational.";
+"The service still has issues." = "The service still has issues.";
+"The service has an ongoing issue." = "The service has an ongoing issue.";
+"Could not verify the service status." = "Could not verify the service status.";
+"OK" = "OK";

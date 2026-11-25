@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "service": {
+    "id": "aircall",
+    "displayName": "Aircall",
+    "statusPageURL": "https://status.aircall.com/",
+    "attribution": {
+      "publisherName": "Aircall"
+    }
+  },
+  "check": {
+    "method": "GET",
+    "requestURL": "https://status.aircall.com/api/v2/summary.json",
+    "format": "json",
+    "json": {
+      "condition": {
+        "pointer": "/status/indicator",
+        "values": {
+          "none": "operational",
+          "minor": "degradedPerformance",
+          "major": "majorOutage",
+          "critical": "majorOutage"
+        }
+      },
+      "incidents": {
+        "pointer": "/incidents",
+        "idPointer": "/id",
+        "titlePointer": "/name",
+        "status": {
+          "pointer": "/status",
+          "values": {
+            "investigating": "investigating",
+            "identified": "identified",
+            "monitoring": "monitoring",
+            "scheduled": "scheduled",
+            "in_progress": "inProgress",
+            "verifying": "verifying"
+          }
+        },
+        "impact": {
+          "pointer": "/impact",
+          "values": {
+            "none": "none",
+            "minor": "minor",
+            "major": "major",
+            "critical": "critical"
+          }
+        },
+        "summaryPointer": "/incident_updates/0/body",
+        "urlPointer": "/shortlink",
+        "startedAtPointer": "/created_at",
+        "updatedAtPointer": "/updated_at"
+      }
+    }
+  }
+}

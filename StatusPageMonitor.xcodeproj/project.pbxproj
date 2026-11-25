@@ -19,7 +19,7 @@
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
-			knownRegions = (en, Base,);
+			knownRegions = (en, it, Base,);
 			mainGroup = 5E43193684054357A3913BF6;
 			productRefGroup = 87EAB99AD8D143169C8D558D /* Products */;
 			packageReferences = (
@@ -71,9 +71,13 @@
 			isa = PBXGroup;
 			children = (
 				DEC2C9ED38BE4F7F9A3A5197 /* StatusPageMonitorApp.swift */,
+				C501A0D180354684A8BA6A11 /* LocalizationManager.swift */,
 				F2147DD99F4B4D54BE265651 /* AppShellTests.swift */,
 				C001A0D180354684A8BA6A11 /* ServiceProviders */,
 				C002A0D180354684A8BA6A11 /* ServiceProvidersTests */,
+				C007A0D180354684A8BA6A11 /* Resources */,
+				C009A0D180354684A8BA6A11 /* Localization */,
+				C305A0D180354684A8BA6A11 /* Assets.xcassets */,
 				87EAB99AD8D143169C8D558D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +92,7 @@
 				C003A0D180354684A8BA6A11 /* JSON */,
 				C004A0D180354684A8BA6A11 /* HTTP */,
 				C005A0D180354684A8BA6A11 /* HTML */,
+				C008A0D180354684A8BA6A11 /* BuiltIn */,
 			);
 			path = Sources/ServiceProviders;
 			sourceTree = "<group>";
@@ -97,6 +102,7 @@
 			children = (
 				C103A0D180354684A8BA6A11 /* ProviderManifest.swift */,
 				C107A0D180354684A8BA6A11 /* JSONResponseParser.swift */,
+				C110A0D180354684A8BA6A11 /* JSONManifestStatusProvider.swift */,
 			);
 			path = JSON;
 			sourceTree = "<group>";
@@ -118,14 +124,166 @@
 			path = HTML;
 			sourceTree = "<group>";
 		};
+		C008A0D180354684A8BA6A11 /* BuiltIn */ = {
+			isa = PBXGroup;
+			children = (
+				C111A0D180354684A8BA6A11 /* BigCommerceStatusProvider.swift */,
+				C112A0D180354684A8BA6A11 /* CanvaStatusProvider.swift */,
+				C113A0D180354684A8BA6A11 /* CloudflareStatusProvider.swift */,
+				C114A0D180354684A8BA6A11 /* CloudwaysStatusProvider.swift */,
+				C115A0D180354684A8BA6A11 /* GitHubStatusProvider.swift */,
+				C117A0D180354684A8BA6A11 /* HubSpotStatusProvider.swift */,
+				C118A0D180354684A8BA6A11 /* MongoDBStatusProvider.swift */,
+				C119A0D180354684A8BA6A11 /* MondayStatusProvider.swift */,
+				C120A0D180354684A8BA6A11 /* NgrokStatusProvider.swift */,
+				C121A0D180354684A8BA6A11 /* OpenAIStatusProvider.swift */,
+				C122A0D180354684A8BA6A11 /* RegisterStatusProvider.swift */,
+				C123A0D180354684A8BA6A11 /* PayPalStatusProvider.swift */,
+				C124A0D180354684A8BA6A11 /* SlackStatusProvider.swift */,
+				C125A0D180354684A8BA6A11 /* StripeStatusProvider.swift */,
+				C126A0D180354684A8BA6A11 /* VercelStatusProvider.swift */,
+			);
+			path = BuiltIn;
+			sourceTree = "<group>";
+		};
 		C002A0D180354684A8BA6A11 /* ServiceProvidersTests */ = {
 			isa = PBXGroup;
 			children = (
 				C201A0D180354684A8BA6A11 /* ProviderContractTests.swift */,
 				C202A0D180354684A8BA6A11 /* ProviderManifestTests.swift */,
 				C203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift */,
+				C204A0D180354684A8BA6A11 /* AircallProviderTests.swift */,
+				C205A0D180354684A8BA6A11 /* BigCommerceProviderTests.swift */,
+				C206A0D180354684A8BA6A11 /* CanvaProviderTests.swift */,
+				C207A0D180354684A8BA6A11 /* CloudflareProviderTests.swift */,
+				C208A0D180354684A8BA6A11 /* CloudwaysProviderTests.swift */,
+				C209A0D180354684A8BA6A11 /* GitHubProviderTests.swift */,
+				C211A0D180354684A8BA6A11 /* HubSpotProviderTests.swift */,
+				C212A0D180354684A8BA6A11 /* MongoDBProviderTests.swift */,
+				C213A0D180354684A8BA6A11 /* MondayProviderTests.swift */,
+				C214A0D180354684A8BA6A11 /* NgrokProviderTests.swift */,
+				C215A0D180354684A8BA6A11 /* OpenAIProviderTests.swift */,
+				C216A0D180354684A8BA6A11 /* RegisterProviderTests.swift */,
+				C217A0D180354684A8BA6A11 /* PayPalProviderTests.swift */,
+				C218A0D180354684A8BA6A11 /* SlackProviderTests.swift */,
+				C219A0D180354684A8BA6A11 /* StripeProviderTests.swift */,
+				C220A0D180354684A8BA6A11 /* VercelProviderTests.swift */,
+				C006A0D180354684A8BA6A11 /* Fixtures */,
 			);
 			path = Tests/ServiceProvidersTests;
+			sourceTree = "<group>";
+		};
+		C006A0D180354684A8BA6A11 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				C401A0D180354684A8BA6A11 /* aircall-operational.json */,
+				C402A0D180354684A8BA6A11 /* aircall-active-incident.json */,
+				C403A0D180354684A8BA6A11 /* aircall-resolved-incident.json */,
+				C404A0D180354684A8BA6A11 /* aircall-unknown-indicator.json */,
+				C405A0D180354684A8BA6A11 /* aircall-malformed.json */,
+				C406A0D180354684A8BA6A11 /* bigcommerce-operational.html */,
+				C407A0D180354684A8BA6A11 /* bigcommerce-active-incident.html */,
+				C408A0D180354684A8BA6A11 /* bigcommerce-maintenance.html */,
+				C409A0D180354684A8BA6A11 /* bigcommerce-unknown-status.html */,
+				C410A0D180354684A8BA6A11 /* bigcommerce-missing-status.html */,
+				C411A0D180354684A8BA6A11 /* canva-operational.json */,
+				C412A0D180354684A8BA6A11 /* canva-active-incident.json */,
+				C413A0D180354684A8BA6A11 /* canva-maintenance.json */,
+				C414A0D180354684A8BA6A11 /* canva-unknown-indicator.json */,
+				C420A0D180354684A8BA6A11 /* cloudflare-operational.json */,
+				C421A0D180354684A8BA6A11 /* cloudflare-active-incident.json */,
+				C422A0D180354684A8BA6A11 /* cloudflare-maintenance.json */,
+				C423A0D180354684A8BA6A11 /* cloudflare-component-outage.json */,
+				C424A0D180354684A8BA6A11 /* cloudflare-unknown-status.json */,
+				C425A0D180354684A8BA6A11 /* cloudflare-services-group-maintenance.json */,
+				C426A0D180354684A8BA6A11 /* cloudways-operational.html */,
+				C427A0D180354684A8BA6A11 /* cloudways-active-incident.html */,
+				C428A0D180354684A8BA6A11 /* cloudways-maintenance.html */,
+				C429A0D180354684A8BA6A11 /* cloudways-unknown-status.html */,
+				C430A0D180354684A8BA6A11 /* cloudways-missing-status.html */,
+				C431A0D180354684A8BA6A11 /* github-operational.json */,
+				C432A0D180354684A8BA6A11 /* github-active-incident.json */,
+				C433A0D180354684A8BA6A11 /* github-resolved-items.json */,
+				C434A0D180354684A8BA6A11 /* github-maintenance.json */,
+				C435A0D180354684A8BA6A11 /* github-unknown-indicator.json */,
+				C436A0D180354684A8BA6A11 /* hubspot-operational.html */,
+				C437A0D180354684A8BA6A11 /* hubspot-active-incident.html */,
+				C438A0D180354684A8BA6A11 /* hubspot-text-fallback.html */,
+				C439A0D180354684A8BA6A11 /* hubspot-unknown-status.html */,
+				C440A0D180354684A8BA6A11 /* hubspot-unknown-indicator.html */,
+				C441A0D180354684A8BA6A11 /* mongodb-operational.json */,
+				C442A0D180354684A8BA6A11 /* mongodb-active-incident.json */,
+				C443A0D180354684A8BA6A11 /* mongodb-resolved-incident.json */,
+				C444A0D180354684A8BA6A11 /* mongodb-missing-resolution.json */,
+				C445A0D180354684A8BA6A11 /* mongodb-unknown-indicator.json */,
+				C446A0D180354684A8BA6A11 /* mongodb-malformed.json */,
+				C447A0D180354684A8BA6A11 /* monday-operational.html */,
+				C448A0D180354684A8BA6A11 /* monday-active-incident.html */,
+				C449A0D180354684A8BA6A11 /* monday-maintenance.html */,
+				C450A0D180354684A8BA6A11 /* monday-unknown-status.html */,
+				C451A0D180354684A8BA6A11 /* monday-missing-status.html */,
+				C452A0D180354684A8BA6A11 /* ngrok-operational.html */,
+				C453A0D180354684A8BA6A11 /* ngrok-non-operational.html */,
+				C454A0D180354684A8BA6A11 /* ngrok-missing-status.html */,
+				C455A0D180354684A8BA6A11 /* ngrok-blank-status.html */,
+				C456A0D180354684A8BA6A11 /* ngrok-maintenance.html */,
+				C457A0D180354684A8BA6A11 /* ngrok-unknown-status.html */,
+				C458A0D180354684A8BA6A11 /* openai-operational.html */,
+				C459A0D180354684A8BA6A11 /* openai-active-issue.html */,
+				C460A0D180354684A8BA6A11 /* openai-first-banner.html */,
+				C461A0D180354684A8BA6A11 /* openai-missing-banner.html */,
+				C462A0D180354684A8BA6A11 /* openai-blank-banner.html */,
+				C463A0D180354684A8BA6A11 /* openai-unknown-banner.html */,
+				C464A0D180354684A8BA6A11 /* register-operational.html */,
+				C465A0D180354684A8BA6A11 /* register-class-maintenance.html */,
+				C466A0D180354684A8BA6A11 /* register-maintenance-incident.html */,
+				C467A0D180354684A8BA6A11 /* register-active-incident.html */,
+				C468A0D180354684A8BA6A11 /* register-text-fallback.html */,
+				C469A0D180354684A8BA6A11 /* register-unknown-indicator.html */,
+				C470A0D180354684A8BA6A11 /* register-unknown-text.html */,
+				C471A0D180354684A8BA6A11 /* register-missing-status.html */,
+				C472A0D180354684A8BA6A11 /* paypal-operational.json */,
+				C473A0D180354684A8BA6A11 /* paypal-active-events.json */,
+				C474A0D180354684A8BA6A11 /* paypal-inactive-events.json */,
+				C475A0D180354684A8BA6A11 /* paypal-boundary-event.json */,
+				C476A0D180354684A8BA6A11 /* paypal-invalid-date.json */,
+				C477A0D180354684A8BA6A11 /* paypal-missing-environment.json */,
+				C478A0D180354684A8BA6A11 /* paypal-missing-result.json */,
+				C479A0D180354684A8BA6A11 /* paypal-missing-summary.json */,
+				C480A0D180354684A8BA6A11 /* paypal-malformed.json */,
+				C481A0D180354684A8BA6A11 /* slack-operational.html */,
+				C482A0D180354684A8BA6A11 /* slack-non-operational.html */,
+				C483A0D180354684A8BA6A11 /* slack-first-heading.html */,
+				C484A0D180354684A8BA6A11 /* slack-missing-heading.html */,
+				C485A0D180354684A8BA6A11 /* slack-blank-heading.html */,
+				C486A0D180354684A8BA6A11 /* stripe-all-clear-element.html */,
+				C487A0D180354684A8BA6A11 /* stripe-active-incidents.html */,
+				C488A0D180354684A8BA6A11 /* stripe-body-all-clear-with-incident.html */,
+				C489A0D180354684A8BA6A11 /* stripe-unrecognized-summary.html */,
+				C490A0D180354684A8BA6A11 /* vercel-operational.html */,
+				C491A0D180354684A8BA6A11 /* vercel-active-incident.html */,
+				C492A0D180354684A8BA6A11 /* vercel-degraded.html */,
+				C493A0D180354684A8BA6A11 /* vercel-unknown-status.html */,
+				C494A0D180354684A8BA6A11 /* vercel-missing-status.html */,
+				C495A0D180354684A8BA6A11 /* vercel-blank-status.html */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		C007A0D180354684A8BA6A11 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C301A0D180354684A8BA6A11 /* aircall.json */,
+			);
+			path = Resources/ProviderManifests;
+			sourceTree = "<group>";
+		};
+		C009A0D180354684A8BA6A11 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				C302A0D180354684A8BA6A11 /* Localizable.strings */,
+			);
+			path = Resources/Localization;
 			sourceTree = "<group>";
 		};
 		87EAB99AD8D143169C8D558D /* Products */ = {
@@ -137,10 +295,45 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		C305A0D180354684A8BA6A11 /* Assets.xcassets */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = Resources/Assets.xcassets;
+			sourceTree = "<group>";
+		};
 		DEC2C9ED38BE4F7F9A3A5197 /* StatusPageMonitorApp.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = Sources/StatusPageMonitorApp/StatusPageMonitorApp.swift;
+			sourceTree = "<group>";
+		};
+		C501A0D180354684A8BA6A11 /* LocalizationManager.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Sources/StatusPageMonitorApp/Localization/LocalizationManager.swift;
+			sourceTree = "<group>";
+		};
+		C302A0D180354684A8BA6A11 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C303A0D180354684A8BA6A11 /* en */,
+				C304A0D180354684A8BA6A11 /* it */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		C303A0D180354684A8BA6A11 /* en */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.strings;
+			name = en;
+			path = en.lproj/Localizable.strings;
+			sourceTree = "<group>";
+		};
+		C304A0D180354684A8BA6A11 /* it */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.strings;
+			name = it;
+			path = it.lproj/Localizable.strings;
 			sourceTree = "<group>";
 		};
 		F2147DD99F4B4D54BE265651 /* AppShellTests.swift */ = {
@@ -221,6 +414,244 @@
 			path = RuntimeParsingTests.swift;
 			sourceTree = "<group>";
 		};
+		C110A0D180354684A8BA6A11 /* JSONManifestStatusProvider.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = JSONManifestStatusProvider.swift;
+			sourceTree = "<group>";
+		};
+		C111A0D180354684A8BA6A11 /* BigCommerceStatusProvider.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = BigCommerceStatusProvider.swift;
+			sourceTree = "<group>";
+		};
+		C112A0D180354684A8BA6A11 /* CanvaStatusProvider.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = CanvaStatusProvider.swift;
+			sourceTree = "<group>";
+		};
+		C113A0D180354684A8BA6A11 /* CloudflareStatusProvider.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = CloudflareStatusProvider.swift;
+			sourceTree = "<group>";
+		};
+		C114A0D180354684A8BA6A11 /* CloudwaysStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudwaysStatusProvider.swift; sourceTree = "<group>"; };
+		C115A0D180354684A8BA6A11 /* GitHubStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubStatusProvider.swift; sourceTree = "<group>"; };
+		C117A0D180354684A8BA6A11 /* HubSpotStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubSpotStatusProvider.swift; sourceTree = "<group>"; };
+		C118A0D180354684A8BA6A11 /* MongoDBStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MongoDBStatusProvider.swift; sourceTree = "<group>"; };
+		C119A0D180354684A8BA6A11 /* MondayStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayStatusProvider.swift; sourceTree = "<group>"; };
+		C120A0D180354684A8BA6A11 /* NgrokStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NgrokStatusProvider.swift; sourceTree = "<group>"; };
+		C121A0D180354684A8BA6A11 /* OpenAIStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIStatusProvider.swift; sourceTree = "<group>"; };
+		C122A0D180354684A8BA6A11 /* RegisterStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterStatusProvider.swift; sourceTree = "<group>"; };
+		C123A0D180354684A8BA6A11 /* PayPalStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayPalStatusProvider.swift; sourceTree = "<group>"; };
+		C124A0D180354684A8BA6A11 /* SlackStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackStatusProvider.swift; sourceTree = "<group>"; };
+		C125A0D180354684A8BA6A11 /* StripeStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripeStatusProvider.swift; sourceTree = "<group>"; };
+		C126A0D180354684A8BA6A11 /* VercelStatusProvider.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VercelStatusProvider.swift; sourceTree = "<group>"; };
+		C204A0D180354684A8BA6A11 /* AircallProviderTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = AircallProviderTests.swift;
+			sourceTree = "<group>";
+		};
+		C205A0D180354684A8BA6A11 /* BigCommerceProviderTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = BigCommerceProviderTests.swift;
+			sourceTree = "<group>";
+		};
+		C206A0D180354684A8BA6A11 /* CanvaProviderTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = CanvaProviderTests.swift;
+			sourceTree = "<group>";
+		};
+		C207A0D180354684A8BA6A11 /* CloudflareProviderTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = CloudflareProviderTests.swift;
+			sourceTree = "<group>";
+		};
+		C208A0D180354684A8BA6A11 /* CloudwaysProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudwaysProviderTests.swift; sourceTree = "<group>"; };
+		C209A0D180354684A8BA6A11 /* GitHubProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubProviderTests.swift; sourceTree = "<group>"; };
+		C211A0D180354684A8BA6A11 /* HubSpotProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubSpotProviderTests.swift; sourceTree = "<group>"; };
+		C212A0D180354684A8BA6A11 /* MongoDBProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MongoDBProviderTests.swift; sourceTree = "<group>"; };
+		C213A0D180354684A8BA6A11 /* MondayProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MondayProviderTests.swift; sourceTree = "<group>"; };
+		C214A0D180354684A8BA6A11 /* NgrokProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NgrokProviderTests.swift; sourceTree = "<group>"; };
+		C215A0D180354684A8BA6A11 /* OpenAIProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIProviderTests.swift; sourceTree = "<group>"; };
+		C216A0D180354684A8BA6A11 /* RegisterProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterProviderTests.swift; sourceTree = "<group>"; };
+		C217A0D180354684A8BA6A11 /* PayPalProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayPalProviderTests.swift; sourceTree = "<group>"; };
+		C218A0D180354684A8BA6A11 /* SlackProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlackProviderTests.swift; sourceTree = "<group>"; };
+		C219A0D180354684A8BA6A11 /* StripeProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StripeProviderTests.swift; sourceTree = "<group>"; };
+		C220A0D180354684A8BA6A11 /* VercelProviderTests.swift */ = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VercelProviderTests.swift; sourceTree = "<group>"; };
+		C301A0D180354684A8BA6A11 /* aircall.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = aircall.json;
+			sourceTree = "<group>";
+		};
+		C401A0D180354684A8BA6A11 /* aircall-operational.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = aircall-operational.json;
+			sourceTree = "<group>";
+		};
+		C402A0D180354684A8BA6A11 /* aircall-active-incident.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = aircall-active-incident.json;
+			sourceTree = "<group>";
+		};
+		C403A0D180354684A8BA6A11 /* aircall-resolved-incident.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = aircall-resolved-incident.json;
+			sourceTree = "<group>";
+		};
+		C404A0D180354684A8BA6A11 /* aircall-unknown-indicator.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = aircall-unknown-indicator.json;
+			sourceTree = "<group>";
+		};
+		C405A0D180354684A8BA6A11 /* aircall-malformed.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = aircall-malformed.json;
+			sourceTree = "<group>";
+		};
+		C406A0D180354684A8BA6A11 /* bigcommerce-operational.html */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.html;
+			path = bigcommerce-operational.html;
+			sourceTree = "<group>";
+		};
+		C407A0D180354684A8BA6A11 /* bigcommerce-active-incident.html */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.html;
+			path = bigcommerce-active-incident.html;
+			sourceTree = "<group>";
+		};
+		C408A0D180354684A8BA6A11 /* bigcommerce-maintenance.html */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.html;
+			path = bigcommerce-maintenance.html;
+			sourceTree = "<group>";
+		};
+		C409A0D180354684A8BA6A11 /* bigcommerce-unknown-status.html */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.html;
+			path = bigcommerce-unknown-status.html;
+			sourceTree = "<group>";
+		};
+		C410A0D180354684A8BA6A11 /* bigcommerce-missing-status.html */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.html;
+			path = bigcommerce-missing-status.html;
+			sourceTree = "<group>";
+		};
+		C411A0D180354684A8BA6A11 /* canva-operational.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = canva-operational.json;
+			sourceTree = "<group>";
+		};
+		C412A0D180354684A8BA6A11 /* canva-active-incident.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = canva-active-incident.json;
+			sourceTree = "<group>";
+		};
+		C413A0D180354684A8BA6A11 /* canva-maintenance.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = canva-maintenance.json;
+			sourceTree = "<group>";
+		};
+		C414A0D180354684A8BA6A11 /* canva-unknown-indicator.json */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.json;
+			path = canva-unknown-indicator.json;
+			sourceTree = "<group>";
+		};
+		C420A0D180354684A8BA6A11 /* cloudflare-operational.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = cloudflare-operational.json; sourceTree = "<group>"; };
+		C421A0D180354684A8BA6A11 /* cloudflare-active-incident.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = cloudflare-active-incident.json; sourceTree = "<group>"; };
+		C422A0D180354684A8BA6A11 /* cloudflare-maintenance.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = cloudflare-maintenance.json; sourceTree = "<group>"; };
+		C423A0D180354684A8BA6A11 /* cloudflare-component-outage.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = cloudflare-component-outage.json; sourceTree = "<group>"; };
+		C424A0D180354684A8BA6A11 /* cloudflare-unknown-status.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = cloudflare-unknown-status.json; sourceTree = "<group>"; };
+		C425A0D180354684A8BA6A11 /* cloudflare-services-group-maintenance.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = cloudflare-services-group-maintenance.json; sourceTree = "<group>"; };
+		C426A0D180354684A8BA6A11 /* cloudways-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = cloudways-operational.html; sourceTree = "<group>"; };
+		C427A0D180354684A8BA6A11 /* cloudways-active-incident.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = cloudways-active-incident.html; sourceTree = "<group>"; };
+		C428A0D180354684A8BA6A11 /* cloudways-maintenance.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = cloudways-maintenance.html; sourceTree = "<group>"; };
+		C429A0D180354684A8BA6A11 /* cloudways-unknown-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = cloudways-unknown-status.html; sourceTree = "<group>"; };
+		C430A0D180354684A8BA6A11 /* cloudways-missing-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = cloudways-missing-status.html; sourceTree = "<group>"; };
+		C431A0D180354684A8BA6A11 /* github-operational.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = github-operational.json; sourceTree = "<group>"; };
+		C432A0D180354684A8BA6A11 /* github-active-incident.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = github-active-incident.json; sourceTree = "<group>"; };
+		C433A0D180354684A8BA6A11 /* github-resolved-items.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = github-resolved-items.json; sourceTree = "<group>"; };
+		C434A0D180354684A8BA6A11 /* github-maintenance.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = github-maintenance.json; sourceTree = "<group>"; };
+		C435A0D180354684A8BA6A11 /* github-unknown-indicator.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = github-unknown-indicator.json; sourceTree = "<group>"; };
+		C436A0D180354684A8BA6A11 /* hubspot-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = hubspot-operational.html; sourceTree = "<group>"; };
+		C437A0D180354684A8BA6A11 /* hubspot-active-incident.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = hubspot-active-incident.html; sourceTree = "<group>"; };
+		C438A0D180354684A8BA6A11 /* hubspot-text-fallback.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = hubspot-text-fallback.html; sourceTree = "<group>"; };
+		C439A0D180354684A8BA6A11 /* hubspot-unknown-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = hubspot-unknown-status.html; sourceTree = "<group>"; };
+		C440A0D180354684A8BA6A11 /* hubspot-unknown-indicator.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = hubspot-unknown-indicator.html; sourceTree = "<group>"; };
+		C441A0D180354684A8BA6A11 /* mongodb-operational.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = mongodb-operational.json; sourceTree = "<group>"; };
+		C442A0D180354684A8BA6A11 /* mongodb-active-incident.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = mongodb-active-incident.json; sourceTree = "<group>"; };
+		C443A0D180354684A8BA6A11 /* mongodb-resolved-incident.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = mongodb-resolved-incident.json; sourceTree = "<group>"; };
+		C444A0D180354684A8BA6A11 /* mongodb-missing-resolution.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = mongodb-missing-resolution.json; sourceTree = "<group>"; };
+		C445A0D180354684A8BA6A11 /* mongodb-unknown-indicator.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = mongodb-unknown-indicator.json; sourceTree = "<group>"; };
+		C446A0D180354684A8BA6A11 /* mongodb-malformed.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = mongodb-malformed.json; sourceTree = "<group>"; };
+		C447A0D180354684A8BA6A11 /* monday-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = monday-operational.html; sourceTree = "<group>"; };
+		C448A0D180354684A8BA6A11 /* monday-active-incident.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = monday-active-incident.html; sourceTree = "<group>"; };
+		C449A0D180354684A8BA6A11 /* monday-maintenance.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = monday-maintenance.html; sourceTree = "<group>"; };
+		C450A0D180354684A8BA6A11 /* monday-unknown-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = monday-unknown-status.html; sourceTree = "<group>"; };
+		C451A0D180354684A8BA6A11 /* monday-missing-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = monday-missing-status.html; sourceTree = "<group>"; };
+		C452A0D180354684A8BA6A11 /* ngrok-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = ngrok-operational.html; sourceTree = "<group>"; };
+		C453A0D180354684A8BA6A11 /* ngrok-non-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = ngrok-non-operational.html; sourceTree = "<group>"; };
+		C454A0D180354684A8BA6A11 /* ngrok-missing-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = ngrok-missing-status.html; sourceTree = "<group>"; };
+		C455A0D180354684A8BA6A11 /* ngrok-blank-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = ngrok-blank-status.html; sourceTree = "<group>"; };
+		C456A0D180354684A8BA6A11 /* ngrok-maintenance.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = ngrok-maintenance.html; sourceTree = "<group>"; };
+		C457A0D180354684A8BA6A11 /* ngrok-unknown-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = ngrok-unknown-status.html; sourceTree = "<group>"; };
+		C458A0D180354684A8BA6A11 /* openai-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = openai-operational.html; sourceTree = "<group>"; };
+		C459A0D180354684A8BA6A11 /* openai-active-issue.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = openai-active-issue.html; sourceTree = "<group>"; };
+		C460A0D180354684A8BA6A11 /* openai-first-banner.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = openai-first-banner.html; sourceTree = "<group>"; };
+		C461A0D180354684A8BA6A11 /* openai-missing-banner.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = openai-missing-banner.html; sourceTree = "<group>"; };
+		C462A0D180354684A8BA6A11 /* openai-blank-banner.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = openai-blank-banner.html; sourceTree = "<group>"; };
+		C463A0D180354684A8BA6A11 /* openai-unknown-banner.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = openai-unknown-banner.html; sourceTree = "<group>"; };
+		C464A0D180354684A8BA6A11 /* register-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-operational.html; sourceTree = "<group>"; };
+		C465A0D180354684A8BA6A11 /* register-class-maintenance.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-class-maintenance.html; sourceTree = "<group>"; };
+		C466A0D180354684A8BA6A11 /* register-maintenance-incident.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-maintenance-incident.html; sourceTree = "<group>"; };
+		C467A0D180354684A8BA6A11 /* register-active-incident.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-active-incident.html; sourceTree = "<group>"; };
+		C468A0D180354684A8BA6A11 /* register-text-fallback.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-text-fallback.html; sourceTree = "<group>"; };
+		C469A0D180354684A8BA6A11 /* register-unknown-indicator.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-unknown-indicator.html; sourceTree = "<group>"; };
+		C470A0D180354684A8BA6A11 /* register-unknown-text.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-unknown-text.html; sourceTree = "<group>"; };
+		C471A0D180354684A8BA6A11 /* register-missing-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = register-missing-status.html; sourceTree = "<group>"; };
+		C472A0D180354684A8BA6A11 /* paypal-operational.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-operational.json; sourceTree = "<group>"; };
+		C473A0D180354684A8BA6A11 /* paypal-active-events.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-active-events.json; sourceTree = "<group>"; };
+		C474A0D180354684A8BA6A11 /* paypal-inactive-events.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-inactive-events.json; sourceTree = "<group>"; };
+		C475A0D180354684A8BA6A11 /* paypal-boundary-event.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-boundary-event.json; sourceTree = "<group>"; };
+		C476A0D180354684A8BA6A11 /* paypal-invalid-date.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-invalid-date.json; sourceTree = "<group>"; };
+		C477A0D180354684A8BA6A11 /* paypal-missing-environment.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-missing-environment.json; sourceTree = "<group>"; };
+		C478A0D180354684A8BA6A11 /* paypal-missing-result.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-missing-result.json; sourceTree = "<group>"; };
+		C479A0D180354684A8BA6A11 /* paypal-missing-summary.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-missing-summary.json; sourceTree = "<group>"; };
+		C480A0D180354684A8BA6A11 /* paypal-malformed.json */ = { isa = PBXFileReference; lastKnownFileType = text.json; path = paypal-malformed.json; sourceTree = "<group>"; };
+		C481A0D180354684A8BA6A11 /* slack-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = slack-operational.html; sourceTree = "<group>"; };
+		C482A0D180354684A8BA6A11 /* slack-non-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = slack-non-operational.html; sourceTree = "<group>"; };
+		C483A0D180354684A8BA6A11 /* slack-first-heading.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = slack-first-heading.html; sourceTree = "<group>"; };
+		C484A0D180354684A8BA6A11 /* slack-missing-heading.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = slack-missing-heading.html; sourceTree = "<group>"; };
+		C485A0D180354684A8BA6A11 /* slack-blank-heading.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = slack-blank-heading.html; sourceTree = "<group>"; };
+		C486A0D180354684A8BA6A11 /* stripe-all-clear-element.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = stripe-all-clear-element.html; sourceTree = "<group>"; };
+		C487A0D180354684A8BA6A11 /* stripe-active-incidents.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = stripe-active-incidents.html; sourceTree = "<group>"; };
+		C488A0D180354684A8BA6A11 /* stripe-body-all-clear-with-incident.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = stripe-body-all-clear-with-incident.html; sourceTree = "<group>"; };
+		C489A0D180354684A8BA6A11 /* stripe-unrecognized-summary.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = stripe-unrecognized-summary.html; sourceTree = "<group>"; };
+		C490A0D180354684A8BA6A11 /* vercel-operational.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = vercel-operational.html; sourceTree = "<group>"; };
+		C491A0D180354684A8BA6A11 /* vercel-active-incident.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = vercel-active-incident.html; sourceTree = "<group>"; };
+		C492A0D180354684A8BA6A11 /* vercel-degraded.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = vercel-degraded.html; sourceTree = "<group>"; };
+		C493A0D180354684A8BA6A11 /* vercel-unknown-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = vercel-unknown-status.html; sourceTree = "<group>"; };
+		C494A0D180354684A8BA6A11 /* vercel-missing-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = vercel-missing-status.html; sourceTree = "<group>"; };
+		C495A0D180354684A8BA6A11 /* vercel-blank-status.html */ = { isa = PBXFileReference; lastKnownFileType = text.html; path = vercel-blank-status.html; sourceTree = "<group>"; };
 		C8E8A6D118BD4AD482D5BE14 /* StatusPageMonitor.app */ = {
 			isa = PBXFileReference;
 			explicitFileType = wrapper.application;
@@ -287,6 +718,208 @@
 			isa = PBXBuildFile;
 			fileRef = C109A0D180354684A8BA6A11 /* ProviderFailure.swift */;
 		};
+		D110A0D180354684A8BA6A11 /* JSONManifestStatusProvider.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C110A0D180354684A8BA6A11 /* JSONManifestStatusProvider.swift */;
+		};
+		D111A0D180354684A8BA6A11 /* BigCommerceStatusProvider.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C111A0D180354684A8BA6A11 /* BigCommerceStatusProvider.swift */;
+		};
+		D112A0D180354684A8BA6A11 /* CanvaStatusProvider.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C112A0D180354684A8BA6A11 /* CanvaStatusProvider.swift */;
+		};
+		D113A0D180354684A8BA6A11 /* CloudflareStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C113A0D180354684A8BA6A11 /* CloudflareStatusProvider.swift */; };
+		D114A0D180354684A8BA6A11 /* CloudwaysStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C114A0D180354684A8BA6A11 /* CloudwaysStatusProvider.swift */; };
+		D115A0D180354684A8BA6A11 /* GitHubStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C115A0D180354684A8BA6A11 /* GitHubStatusProvider.swift */; };
+		D117A0D180354684A8BA6A11 /* HubSpotStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C117A0D180354684A8BA6A11 /* HubSpotStatusProvider.swift */; };
+		D118A0D180354684A8BA6A11 /* MongoDBStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C118A0D180354684A8BA6A11 /* MongoDBStatusProvider.swift */; };
+		D119A0D180354684A8BA6A11 /* MondayStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C119A0D180354684A8BA6A11 /* MondayStatusProvider.swift */; };
+		D120A0D180354684A8BA6A11 /* NgrokStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C120A0D180354684A8BA6A11 /* NgrokStatusProvider.swift */; };
+		D121A0D180354684A8BA6A11 /* OpenAIStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C121A0D180354684A8BA6A11 /* OpenAIStatusProvider.swift */; };
+		D122A0D180354684A8BA6A11 /* RegisterStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C122A0D180354684A8BA6A11 /* RegisterStatusProvider.swift */; };
+		D123A0D180354684A8BA6A11 /* PayPalStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C123A0D180354684A8BA6A11 /* PayPalStatusProvider.swift */; };
+		D124A0D180354684A8BA6A11 /* SlackStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C124A0D180354684A8BA6A11 /* SlackStatusProvider.swift */; };
+		D125A0D180354684A8BA6A11 /* StripeStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C125A0D180354684A8BA6A11 /* StripeStatusProvider.swift */; };
+		D126A0D180354684A8BA6A11 /* VercelStatusProvider.swift in Sources */ = { isa = PBXBuildFile; fileRef = C126A0D180354684A8BA6A11 /* VercelStatusProvider.swift */; };
+		D501A0D180354684A8BA6A11 /* LocalizationManager.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C501A0D180354684A8BA6A11 /* LocalizationManager.swift */;
+		};
+		D499A0D180354684A8BA6A11 /* Assets.xcassets in App Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C305A0D180354684A8BA6A11 /* Assets.xcassets */;
+		};
+		D466A0D180354684A8BA6A11 /* Localizable.strings in App Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C302A0D180354684A8BA6A11 /* Localizable.strings */;
+		};
+		D204A0D180354684A8BA6A11 /* AircallProviderTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C204A0D180354684A8BA6A11 /* AircallProviderTests.swift */;
+		};
+		D205A0D180354684A8BA6A11 /* BigCommerceProviderTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C205A0D180354684A8BA6A11 /* BigCommerceProviderTests.swift */;
+		};
+		D206A0D180354684A8BA6A11 /* CanvaProviderTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C206A0D180354684A8BA6A11 /* CanvaProviderTests.swift */;
+		};
+		D207A0D180354684A8BA6A11 /* CloudflareProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C207A0D180354684A8BA6A11 /* CloudflareProviderTests.swift */; };
+		D208A0D180354684A8BA6A11 /* CloudwaysProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C208A0D180354684A8BA6A11 /* CloudwaysProviderTests.swift */; };
+		D209A0D180354684A8BA6A11 /* GitHubProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C209A0D180354684A8BA6A11 /* GitHubProviderTests.swift */; };
+		D211A0D180354684A8BA6A11 /* HubSpotProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C211A0D180354684A8BA6A11 /* HubSpotProviderTests.swift */; };
+		D212A0D180354684A8BA6A11 /* MongoDBProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C212A0D180354684A8BA6A11 /* MongoDBProviderTests.swift */; };
+		D213A0D180354684A8BA6A11 /* MondayProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C213A0D180354684A8BA6A11 /* MondayProviderTests.swift */; };
+		D214A0D180354684A8BA6A11 /* NgrokProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C214A0D180354684A8BA6A11 /* NgrokProviderTests.swift */; };
+		D215A0D180354684A8BA6A11 /* OpenAIProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C215A0D180354684A8BA6A11 /* OpenAIProviderTests.swift */; };
+		D216A0D180354684A8BA6A11 /* RegisterProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C216A0D180354684A8BA6A11 /* RegisterProviderTests.swift */; };
+		D217A0D180354684A8BA6A11 /* PayPalProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C217A0D180354684A8BA6A11 /* PayPalProviderTests.swift */; };
+		D218A0D180354684A8BA6A11 /* SlackProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C218A0D180354684A8BA6A11 /* SlackProviderTests.swift */; };
+		D219A0D180354684A8BA6A11 /* StripeProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C219A0D180354684A8BA6A11 /* StripeProviderTests.swift */; };
+		D220A0D180354684A8BA6A11 /* VercelProviderTests.swift in Sources */ = { isa = PBXBuildFile; fileRef = C220A0D180354684A8BA6A11 /* VercelProviderTests.swift */; };
+		D401A0D180354684A8BA6A11 /* aircall.json in App Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C301A0D180354684A8BA6A11 /* aircall.json */;
+		};
+		D402A0D180354684A8BA6A11 /* aircall.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C301A0D180354684A8BA6A11 /* aircall.json */;
+		};
+		D403A0D180354684A8BA6A11 /* aircall-operational.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C401A0D180354684A8BA6A11 /* aircall-operational.json */;
+		};
+		D404A0D180354684A8BA6A11 /* aircall-active-incident.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C402A0D180354684A8BA6A11 /* aircall-active-incident.json */;
+		};
+		D405A0D180354684A8BA6A11 /* aircall-resolved-incident.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C403A0D180354684A8BA6A11 /* aircall-resolved-incident.json */;
+		};
+		D406A0D180354684A8BA6A11 /* aircall-unknown-indicator.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C404A0D180354684A8BA6A11 /* aircall-unknown-indicator.json */;
+		};
+		D407A0D180354684A8BA6A11 /* aircall-malformed.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C405A0D180354684A8BA6A11 /* aircall-malformed.json */;
+		};
+		D408A0D180354684A8BA6A11 /* bigcommerce-operational.html in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C406A0D180354684A8BA6A11 /* bigcommerce-operational.html */;
+		};
+		D409A0D180354684A8BA6A11 /* bigcommerce-active-incident.html in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C407A0D180354684A8BA6A11 /* bigcommerce-active-incident.html */;
+		};
+		D410A0D180354684A8BA6A11 /* bigcommerce-maintenance.html in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C408A0D180354684A8BA6A11 /* bigcommerce-maintenance.html */;
+		};
+		D411A0D180354684A8BA6A11 /* bigcommerce-unknown-status.html in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C409A0D180354684A8BA6A11 /* bigcommerce-unknown-status.html */;
+		};
+		D412A0D180354684A8BA6A11 /* bigcommerce-missing-status.html in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C410A0D180354684A8BA6A11 /* bigcommerce-missing-status.html */;
+		};
+		D413A0D180354684A8BA6A11 /* canva-operational.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C411A0D180354684A8BA6A11 /* canva-operational.json */;
+		};
+		D414A0D180354684A8BA6A11 /* canva-active-incident.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C412A0D180354684A8BA6A11 /* canva-active-incident.json */;
+		};
+		D415A0D180354684A8BA6A11 /* canva-maintenance.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C413A0D180354684A8BA6A11 /* canva-maintenance.json */;
+		};
+		D416A0D180354684A8BA6A11 /* canva-unknown-indicator.json in Test Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = C414A0D180354684A8BA6A11 /* canva-unknown-indicator.json */;
+		};
+		D422A0D180354684A8BA6A11 /* cloudflare-operational.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C420A0D180354684A8BA6A11 /* cloudflare-operational.json */; };
+		D423A0D180354684A8BA6A11 /* cloudflare-active-incident.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C421A0D180354684A8BA6A11 /* cloudflare-active-incident.json */; };
+		D424A0D180354684A8BA6A11 /* cloudflare-maintenance.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C422A0D180354684A8BA6A11 /* cloudflare-maintenance.json */; };
+		D425A0D180354684A8BA6A11 /* cloudflare-component-outage.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C423A0D180354684A8BA6A11 /* cloudflare-component-outage.json */; };
+		D426A0D180354684A8BA6A11 /* cloudflare-unknown-status.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C424A0D180354684A8BA6A11 /* cloudflare-unknown-status.json */; };
+		D427A0D180354684A8BA6A11 /* cloudflare-services-group-maintenance.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C425A0D180354684A8BA6A11 /* cloudflare-services-group-maintenance.json */; };
+		D428A0D180354684A8BA6A11 /* cloudways-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C426A0D180354684A8BA6A11 /* cloudways-operational.html */; };
+		D429A0D180354684A8BA6A11 /* cloudways-active-incident.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C427A0D180354684A8BA6A11 /* cloudways-active-incident.html */; };
+		D430A0D180354684A8BA6A11 /* cloudways-maintenance.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C428A0D180354684A8BA6A11 /* cloudways-maintenance.html */; };
+		D431A0D180354684A8BA6A11 /* cloudways-unknown-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C429A0D180354684A8BA6A11 /* cloudways-unknown-status.html */; };
+		D432A0D180354684A8BA6A11 /* cloudways-missing-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C430A0D180354684A8BA6A11 /* cloudways-missing-status.html */; };
+		D433A0D180354684A8BA6A11 /* github-operational.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C431A0D180354684A8BA6A11 /* github-operational.json */; };
+		D434A0D180354684A8BA6A11 /* github-active-incident.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C432A0D180354684A8BA6A11 /* github-active-incident.json */; };
+		D435A0D180354684A8BA6A11 /* github-resolved-items.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C433A0D180354684A8BA6A11 /* github-resolved-items.json */; };
+		D436A0D180354684A8BA6A11 /* github-maintenance.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C434A0D180354684A8BA6A11 /* github-maintenance.json */; };
+		D437A0D180354684A8BA6A11 /* github-unknown-indicator.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C435A0D180354684A8BA6A11 /* github-unknown-indicator.json */; };
+		D438A0D180354684A8BA6A11 /* hubspot-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C436A0D180354684A8BA6A11 /* hubspot-operational.html */; };
+		D439A0D180354684A8BA6A11 /* hubspot-active-incident.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C437A0D180354684A8BA6A11 /* hubspot-active-incident.html */; };
+		D440A0D180354684A8BA6A11 /* hubspot-text-fallback.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C438A0D180354684A8BA6A11 /* hubspot-text-fallback.html */; };
+		D441A0D180354684A8BA6A11 /* hubspot-unknown-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C439A0D180354684A8BA6A11 /* hubspot-unknown-status.html */; };
+		D442A0D180354684A8BA6A11 /* hubspot-unknown-indicator.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C440A0D180354684A8BA6A11 /* hubspot-unknown-indicator.html */; };
+		D443A0D180354684A8BA6A11 /* mongodb-operational.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C441A0D180354684A8BA6A11 /* mongodb-operational.json */; };
+		D444A0D180354684A8BA6A11 /* mongodb-active-incident.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C442A0D180354684A8BA6A11 /* mongodb-active-incident.json */; };
+		D445A0D180354684A8BA6A11 /* mongodb-resolved-incident.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C443A0D180354684A8BA6A11 /* mongodb-resolved-incident.json */; };
+		D446A0D180354684A8BA6A11 /* mongodb-missing-resolution.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C444A0D180354684A8BA6A11 /* mongodb-missing-resolution.json */; };
+		D447A0D180354684A8BA6A11 /* mongodb-unknown-indicator.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C445A0D180354684A8BA6A11 /* mongodb-unknown-indicator.json */; };
+		D448A0D180354684A8BA6A11 /* mongodb-malformed.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C446A0D180354684A8BA6A11 /* mongodb-malformed.json */; };
+		D449A0D180354684A8BA6A11 /* monday-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C447A0D180354684A8BA6A11 /* monday-operational.html */; };
+		D450A0D180354684A8BA6A11 /* monday-active-incident.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C448A0D180354684A8BA6A11 /* monday-active-incident.html */; };
+		D451A0D180354684A8BA6A11 /* monday-maintenance.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C449A0D180354684A8BA6A11 /* monday-maintenance.html */; };
+		D452A0D180354684A8BA6A11 /* monday-unknown-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C450A0D180354684A8BA6A11 /* monday-unknown-status.html */; };
+		D453A0D180354684A8BA6A11 /* monday-missing-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C451A0D180354684A8BA6A11 /* monday-missing-status.html */; };
+		D454A0D180354684A8BA6A11 /* ngrok-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C452A0D180354684A8BA6A11 /* ngrok-operational.html */; };
+		D455A0D180354684A8BA6A11 /* ngrok-non-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C453A0D180354684A8BA6A11 /* ngrok-non-operational.html */; };
+		D456A0D180354684A8BA6A11 /* ngrok-missing-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C454A0D180354684A8BA6A11 /* ngrok-missing-status.html */; };
+		D457A0D180354684A8BA6A11 /* ngrok-blank-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C455A0D180354684A8BA6A11 /* ngrok-blank-status.html */; };
+		D458A0D180354684A8BA6A11 /* ngrok-maintenance.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C456A0D180354684A8BA6A11 /* ngrok-maintenance.html */; };
+		D459A0D180354684A8BA6A11 /* ngrok-unknown-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C457A0D180354684A8BA6A11 /* ngrok-unknown-status.html */; };
+		D460A0D180354684A8BA6A11 /* openai-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C458A0D180354684A8BA6A11 /* openai-operational.html */; };
+		D461A0D180354684A8BA6A11 /* openai-active-issue.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C459A0D180354684A8BA6A11 /* openai-active-issue.html */; };
+		D462A0D180354684A8BA6A11 /* openai-first-banner.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C460A0D180354684A8BA6A11 /* openai-first-banner.html */; };
+		D463A0D180354684A8BA6A11 /* openai-missing-banner.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C461A0D180354684A8BA6A11 /* openai-missing-banner.html */; };
+		D464A0D180354684A8BA6A11 /* openai-blank-banner.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C462A0D180354684A8BA6A11 /* openai-blank-banner.html */; };
+		D465A0D180354684A8BA6A11 /* openai-unknown-banner.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C463A0D180354684A8BA6A11 /* openai-unknown-banner.html */; };
+		D467A0D180354684A8BA6A11 /* register-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C464A0D180354684A8BA6A11 /* register-operational.html */; };
+		D468A0D180354684A8BA6A11 /* register-class-maintenance.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C465A0D180354684A8BA6A11 /* register-class-maintenance.html */; };
+		D469A0D180354684A8BA6A11 /* register-maintenance-incident.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C466A0D180354684A8BA6A11 /* register-maintenance-incident.html */; };
+		D470A0D180354684A8BA6A11 /* register-active-incident.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C467A0D180354684A8BA6A11 /* register-active-incident.html */; };
+		D471A0D180354684A8BA6A11 /* register-text-fallback.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C468A0D180354684A8BA6A11 /* register-text-fallback.html */; };
+		D472A0D180354684A8BA6A11 /* register-unknown-indicator.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C469A0D180354684A8BA6A11 /* register-unknown-indicator.html */; };
+		D473A0D180354684A8BA6A11 /* register-unknown-text.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C470A0D180354684A8BA6A11 /* register-unknown-text.html */; };
+		D474A0D180354684A8BA6A11 /* register-missing-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C471A0D180354684A8BA6A11 /* register-missing-status.html */; };
+		D475A0D180354684A8BA6A11 /* paypal-operational.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C472A0D180354684A8BA6A11 /* paypal-operational.json */; };
+		D476A0D180354684A8BA6A11 /* paypal-active-events.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C473A0D180354684A8BA6A11 /* paypal-active-events.json */; };
+		D477A0D180354684A8BA6A11 /* paypal-inactive-events.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C474A0D180354684A8BA6A11 /* paypal-inactive-events.json */; };
+		D478A0D180354684A8BA6A11 /* paypal-boundary-event.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C475A0D180354684A8BA6A11 /* paypal-boundary-event.json */; };
+		D479A0D180354684A8BA6A11 /* paypal-invalid-date.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C476A0D180354684A8BA6A11 /* paypal-invalid-date.json */; };
+		D480A0D180354684A8BA6A11 /* paypal-missing-environment.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C477A0D180354684A8BA6A11 /* paypal-missing-environment.json */; };
+		D481A0D180354684A8BA6A11 /* paypal-missing-result.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C478A0D180354684A8BA6A11 /* paypal-missing-result.json */; };
+		D482A0D180354684A8BA6A11 /* paypal-missing-summary.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C479A0D180354684A8BA6A11 /* paypal-missing-summary.json */; };
+		D483A0D180354684A8BA6A11 /* paypal-malformed.json in Test Resources */ = { isa = PBXBuildFile; fileRef = C480A0D180354684A8BA6A11 /* paypal-malformed.json */; };
+		D484A0D180354684A8BA6A11 /* slack-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C481A0D180354684A8BA6A11 /* slack-operational.html */; };
+		D485A0D180354684A8BA6A11 /* slack-non-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C482A0D180354684A8BA6A11 /* slack-non-operational.html */; };
+		D486A0D180354684A8BA6A11 /* slack-first-heading.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C483A0D180354684A8BA6A11 /* slack-first-heading.html */; };
+		D487A0D180354684A8BA6A11 /* slack-missing-heading.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C484A0D180354684A8BA6A11 /* slack-missing-heading.html */; };
+		D488A0D180354684A8BA6A11 /* slack-blank-heading.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C485A0D180354684A8BA6A11 /* slack-blank-heading.html */; };
+		D489A0D180354684A8BA6A11 /* stripe-all-clear-element.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C486A0D180354684A8BA6A11 /* stripe-all-clear-element.html */; };
+		D490A0D180354684A8BA6A11 /* stripe-active-incidents.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C487A0D180354684A8BA6A11 /* stripe-active-incidents.html */; };
+		D491A0D180354684A8BA6A11 /* stripe-body-all-clear-with-incident.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C488A0D180354684A8BA6A11 /* stripe-body-all-clear-with-incident.html */; };
+		D492A0D180354684A8BA6A11 /* stripe-unrecognized-summary.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C489A0D180354684A8BA6A11 /* stripe-unrecognized-summary.html */; };
+		D493A0D180354684A8BA6A11 /* vercel-operational.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C490A0D180354684A8BA6A11 /* vercel-operational.html */; };
+		D494A0D180354684A8BA6A11 /* vercel-active-incident.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C491A0D180354684A8BA6A11 /* vercel-active-incident.html */; };
+		D495A0D180354684A8BA6A11 /* vercel-degraded.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C492A0D180354684A8BA6A11 /* vercel-degraded.html */; };
+		D496A0D180354684A8BA6A11 /* vercel-unknown-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C493A0D180354684A8BA6A11 /* vercel-unknown-status.html */; };
+		D497A0D180354684A8BA6A11 /* vercel-missing-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C494A0D180354684A8BA6A11 /* vercel-missing-status.html */; };
+		D498A0D180354684A8BA6A11 /* vercel-blank-status.html in Test Resources */ = { isa = PBXBuildFile; fileRef = C495A0D180354684A8BA6A11 /* vercel-blank-status.html */; };
 		D203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = C203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift */;
@@ -300,6 +933,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0663D79D3D6E4E57BC743862 /* StatusPageMonitorApp.swift in Sources */,
+				D501A0D180354684A8BA6A11 /* LocalizationManager.swift in Sources */,
 				D101A0D180354684A8BA6A11 /* StatusProvider.swift in Sources */,
 				D109A0D180354684A8BA6A11 /* ProviderFailure.swift in Sources */,
 				D102A0D180354684A8BA6A11 /* BuiltInServiceCatalog.swift in Sources */,
@@ -308,6 +942,22 @@
 				D105A0D180354684A8BA6A11 /* HTTPTransport.swift in Sources */,
 				D106A0D180354684A8BA6A11 /* HTTPResponseLimits.swift in Sources */,
 				D107A0D180354684A8BA6A11 /* JSONResponseParser.swift in Sources */,
+				D110A0D180354684A8BA6A11 /* JSONManifestStatusProvider.swift in Sources */,
+				D111A0D180354684A8BA6A11 /* BigCommerceStatusProvider.swift in Sources */,
+				D112A0D180354684A8BA6A11 /* CanvaStatusProvider.swift in Sources */,
+				D113A0D180354684A8BA6A11 /* CloudflareStatusProvider.swift in Sources */,
+				D114A0D180354684A8BA6A11 /* CloudwaysStatusProvider.swift in Sources */,
+				D115A0D180354684A8BA6A11 /* GitHubStatusProvider.swift in Sources */,
+				D117A0D180354684A8BA6A11 /* HubSpotStatusProvider.swift in Sources */,
+				D118A0D180354684A8BA6A11 /* MongoDBStatusProvider.swift in Sources */,
+				D119A0D180354684A8BA6A11 /* MondayStatusProvider.swift in Sources */,
+				D120A0D180354684A8BA6A11 /* NgrokStatusProvider.swift in Sources */,
+				D121A0D180354684A8BA6A11 /* OpenAIStatusProvider.swift in Sources */,
+				D122A0D180354684A8BA6A11 /* RegisterStatusProvider.swift in Sources */,
+				D123A0D180354684A8BA6A11 /* PayPalStatusProvider.swift in Sources */,
+				D124A0D180354684A8BA6A11 /* SlackStatusProvider.swift in Sources */,
+				D125A0D180354684A8BA6A11 /* StripeStatusProvider.swift in Sources */,
+				D126A0D180354684A8BA6A11 /* VercelStatusProvider.swift in Sources */,
 				D108A0D180354684A8BA6A11 /* HTMLStatusPageParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -321,7 +971,11 @@
 		9F91D8609F1745DB926B4A11 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = ();
+			files = (
+				D401A0D180354684A8BA6A11 /* aircall.json in App Resources */,
+				D466A0D180354684A8BA6A11 /* Localizable.strings in App Resources */,
+				D499A0D180354684A8BA6A11 /* Assets.xcassets in App Resources */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7455FDE590B84BFDAEE03A49 /* Sources */ = {
@@ -332,6 +986,22 @@
 				D201A0D180354684A8BA6A11 /* ProviderContractTests.swift in Sources */,
 				D202A0D180354684A8BA6A11 /* ProviderManifestTests.swift in Sources */,
 				D203A0D180354684A8BA6A11 /* RuntimeParsingTests.swift in Sources */,
+				D204A0D180354684A8BA6A11 /* AircallProviderTests.swift in Sources */,
+				D205A0D180354684A8BA6A11 /* BigCommerceProviderTests.swift in Sources */,
+				D206A0D180354684A8BA6A11 /* CanvaProviderTests.swift in Sources */,
+				D207A0D180354684A8BA6A11 /* CloudflareProviderTests.swift in Sources */,
+				D208A0D180354684A8BA6A11 /* CloudwaysProviderTests.swift in Sources */,
+				D209A0D180354684A8BA6A11 /* GitHubProviderTests.swift in Sources */,
+				D211A0D180354684A8BA6A11 /* HubSpotProviderTests.swift in Sources */,
+				D212A0D180354684A8BA6A11 /* MongoDBProviderTests.swift in Sources */,
+				D213A0D180354684A8BA6A11 /* MondayProviderTests.swift in Sources */,
+				D214A0D180354684A8BA6A11 /* NgrokProviderTests.swift in Sources */,
+				D215A0D180354684A8BA6A11 /* OpenAIProviderTests.swift in Sources */,
+				D216A0D180354684A8BA6A11 /* RegisterProviderTests.swift in Sources */,
+				D217A0D180354684A8BA6A11 /* PayPalProviderTests.swift in Sources */,
+				D218A0D180354684A8BA6A11 /* SlackProviderTests.swift in Sources */,
+				D219A0D180354684A8BA6A11 /* StripeProviderTests.swift in Sources */,
+				D220A0D180354684A8BA6A11 /* VercelProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,7 +1014,99 @@
 		F3EAC8B1F8A84537BA17F1E7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
-			files = ();
+			files = (
+				D402A0D180354684A8BA6A11 /* aircall.json in Test Resources */,
+				D403A0D180354684A8BA6A11 /* aircall-operational.json in Test Resources */,
+				D404A0D180354684A8BA6A11 /* aircall-active-incident.json in Test Resources */,
+				D405A0D180354684A8BA6A11 /* aircall-resolved-incident.json in Test Resources */,
+				D406A0D180354684A8BA6A11 /* aircall-unknown-indicator.json in Test Resources */,
+				D407A0D180354684A8BA6A11 /* aircall-malformed.json in Test Resources */,
+				D408A0D180354684A8BA6A11 /* bigcommerce-operational.html in Test Resources */,
+				D409A0D180354684A8BA6A11 /* bigcommerce-active-incident.html in Test Resources */,
+				D410A0D180354684A8BA6A11 /* bigcommerce-maintenance.html in Test Resources */,
+				D411A0D180354684A8BA6A11 /* bigcommerce-unknown-status.html in Test Resources */,
+				D412A0D180354684A8BA6A11 /* bigcommerce-missing-status.html in Test Resources */,
+				D413A0D180354684A8BA6A11 /* canva-operational.json in Test Resources */,
+				D414A0D180354684A8BA6A11 /* canva-active-incident.json in Test Resources */,
+				D415A0D180354684A8BA6A11 /* canva-maintenance.json in Test Resources */,
+				D416A0D180354684A8BA6A11 /* canva-unknown-indicator.json in Test Resources */,
+				D422A0D180354684A8BA6A11 /* cloudflare-operational.json in Test Resources */,
+				D423A0D180354684A8BA6A11 /* cloudflare-active-incident.json in Test Resources */,
+				D424A0D180354684A8BA6A11 /* cloudflare-maintenance.json in Test Resources */,
+				D425A0D180354684A8BA6A11 /* cloudflare-component-outage.json in Test Resources */,
+				D426A0D180354684A8BA6A11 /* cloudflare-unknown-status.json in Test Resources */,
+				D427A0D180354684A8BA6A11 /* cloudflare-services-group-maintenance.json in Test Resources */,
+				D428A0D180354684A8BA6A11 /* cloudways-operational.html in Test Resources */,
+				D429A0D180354684A8BA6A11 /* cloudways-active-incident.html in Test Resources */,
+				D430A0D180354684A8BA6A11 /* cloudways-maintenance.html in Test Resources */,
+				D431A0D180354684A8BA6A11 /* cloudways-unknown-status.html in Test Resources */,
+				D432A0D180354684A8BA6A11 /* cloudways-missing-status.html in Test Resources */,
+				D433A0D180354684A8BA6A11 /* github-operational.json in Test Resources */,
+				D434A0D180354684A8BA6A11 /* github-active-incident.json in Test Resources */,
+				D435A0D180354684A8BA6A11 /* github-resolved-items.json in Test Resources */,
+				D436A0D180354684A8BA6A11 /* github-maintenance.json in Test Resources */,
+				D437A0D180354684A8BA6A11 /* github-unknown-indicator.json in Test Resources */,
+				D438A0D180354684A8BA6A11 /* hubspot-operational.html in Test Resources */,
+				D439A0D180354684A8BA6A11 /* hubspot-active-incident.html in Test Resources */,
+				D440A0D180354684A8BA6A11 /* hubspot-text-fallback.html in Test Resources */,
+				D441A0D180354684A8BA6A11 /* hubspot-unknown-status.html in Test Resources */,
+				D442A0D180354684A8BA6A11 /* hubspot-unknown-indicator.html in Test Resources */,
+				D443A0D180354684A8BA6A11 /* mongodb-operational.json in Test Resources */,
+				D444A0D180354684A8BA6A11 /* mongodb-active-incident.json in Test Resources */,
+				D445A0D180354684A8BA6A11 /* mongodb-resolved-incident.json in Test Resources */,
+				D446A0D180354684A8BA6A11 /* mongodb-missing-resolution.json in Test Resources */,
+				D447A0D180354684A8BA6A11 /* mongodb-unknown-indicator.json in Test Resources */,
+				D448A0D180354684A8BA6A11 /* mongodb-malformed.json in Test Resources */,
+				D449A0D180354684A8BA6A11 /* monday-operational.html in Test Resources */,
+				D450A0D180354684A8BA6A11 /* monday-active-incident.html in Test Resources */,
+				D451A0D180354684A8BA6A11 /* monday-maintenance.html in Test Resources */,
+				D452A0D180354684A8BA6A11 /* monday-unknown-status.html in Test Resources */,
+				D453A0D180354684A8BA6A11 /* monday-missing-status.html in Test Resources */,
+				D454A0D180354684A8BA6A11 /* ngrok-operational.html in Test Resources */,
+				D455A0D180354684A8BA6A11 /* ngrok-non-operational.html in Test Resources */,
+				D456A0D180354684A8BA6A11 /* ngrok-missing-status.html in Test Resources */,
+				D457A0D180354684A8BA6A11 /* ngrok-blank-status.html in Test Resources */,
+				D458A0D180354684A8BA6A11 /* ngrok-maintenance.html in Test Resources */,
+				D459A0D180354684A8BA6A11 /* ngrok-unknown-status.html in Test Resources */,
+				D460A0D180354684A8BA6A11 /* openai-operational.html in Test Resources */,
+				D461A0D180354684A8BA6A11 /* openai-active-issue.html in Test Resources */,
+				D462A0D180354684A8BA6A11 /* openai-first-banner.html in Test Resources */,
+				D463A0D180354684A8BA6A11 /* openai-missing-banner.html in Test Resources */,
+				D464A0D180354684A8BA6A11 /* openai-blank-banner.html in Test Resources */,
+				D465A0D180354684A8BA6A11 /* openai-unknown-banner.html in Test Resources */,
+				D467A0D180354684A8BA6A11 /* register-operational.html in Test Resources */,
+				D468A0D180354684A8BA6A11 /* register-class-maintenance.html in Test Resources */,
+				D469A0D180354684A8BA6A11 /* register-maintenance-incident.html in Test Resources */,
+				D470A0D180354684A8BA6A11 /* register-active-incident.html in Test Resources */,
+				D471A0D180354684A8BA6A11 /* register-text-fallback.html in Test Resources */,
+				D472A0D180354684A8BA6A11 /* register-unknown-indicator.html in Test Resources */,
+				D473A0D180354684A8BA6A11 /* register-unknown-text.html in Test Resources */,
+				D474A0D180354684A8BA6A11 /* register-missing-status.html in Test Resources */,
+				D475A0D180354684A8BA6A11 /* paypal-operational.json in Test Resources */,
+				D476A0D180354684A8BA6A11 /* paypal-active-events.json in Test Resources */,
+				D477A0D180354684A8BA6A11 /* paypal-inactive-events.json in Test Resources */,
+				D478A0D180354684A8BA6A11 /* paypal-boundary-event.json in Test Resources */,
+				D479A0D180354684A8BA6A11 /* paypal-invalid-date.json in Test Resources */,
+				D480A0D180354684A8BA6A11 /* paypal-missing-environment.json in Test Resources */,
+				D481A0D180354684A8BA6A11 /* paypal-missing-result.json in Test Resources */,
+				D482A0D180354684A8BA6A11 /* paypal-missing-summary.json in Test Resources */,
+				D483A0D180354684A8BA6A11 /* paypal-malformed.json in Test Resources */,
+				D484A0D180354684A8BA6A11 /* slack-operational.html in Test Resources */,
+				D485A0D180354684A8BA6A11 /* slack-non-operational.html in Test Resources */,
+				D486A0D180354684A8BA6A11 /* slack-first-heading.html in Test Resources */,
+				D487A0D180354684A8BA6A11 /* slack-missing-heading.html in Test Resources */,
+				D488A0D180354684A8BA6A11 /* slack-blank-heading.html in Test Resources */,
+				D489A0D180354684A8BA6A11 /* stripe-all-clear-element.html in Test Resources */,
+				D490A0D180354684A8BA6A11 /* stripe-active-incidents.html in Test Resources */,
+				D491A0D180354684A8BA6A11 /* stripe-body-all-clear-with-incident.html in Test Resources */,
+				D492A0D180354684A8BA6A11 /* stripe-unrecognized-summary.html in Test Resources */,
+				D493A0D180354684A8BA6A11 /* vercel-operational.html in Test Resources */,
+				D494A0D180354684A8BA6A11 /* vercel-active-incident.html in Test Resources */,
+				D495A0D180354684A8BA6A11 /* vercel-degraded.html in Test Resources */,
+				D496A0D180354684A8BA6A11 /* vercel-unknown-status.html in Test Resources */,
+				D497A0D180354684A8BA6A11 /* vercel-missing-status.html in Test Resources */,
+				D498A0D180354684A8BA6A11 /* vercel-blank-status.html in Test Resources */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F001A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "SwiftSoup" */ = {
@@ -402,12 +1164,14 @@
 		7CE36A31956A414FAC9A77ED /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGNING_ALLOWED = NO;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
 				INFOPLIST_KEY_LSUIElement = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.01;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -418,11 +1182,13 @@
 		6A432B303DB1451CBD56CCF8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGNING_ALLOWED = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
 				INFOPLIST_KEY_LSUIElement = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.01;
 				PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;

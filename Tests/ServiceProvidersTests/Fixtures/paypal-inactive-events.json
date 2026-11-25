@@ -1,0 +1,1 @@
+{"result":[{"environment":"production","state":"resolved","summary":"Resolved production event"},{"environment":"production","state":"open","summary":"Future event","startDate":"2025-06-15T15:06:41Z"},{"environment":"production","state":"open","summary":"Ended event","endDate":"2025-06-15T15:06:39Z"},{"environment":"sandbox","summary":"Sandbox event without a state"}]}

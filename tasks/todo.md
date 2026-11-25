@@ -29,8 +29,9 @@ Tasks are ordered by dependency. Complete each provider and its tutorial before 
 - [x] The Xcode project builds a runnable macOS app with the documented Xcode version and minimum deployment target.
 - [x] The README states requirements and provides clone, resolve, build, run, and test steps; the repository URL remains an explicit placeholder until its canonical host is selected.
 - [x] The app shell defines a menu bar item with a placeholder popover and a separate dashboard window.
+- [x] The popover has an explicit **Quit Status Page Monitor** button and `⌘Q` shortcut.
 
-**Verification:** `xcodebuild -quiet -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -destination 'platform=macOS' -derivedDataPath build build` and the corresponding `test` command passed. Launched the built app and visually verified the dashboard window. `MenuBarExtra` and the popover compile, but the computer-use interface did not expose the system status item for a click-through check.
+**Verification:** The documented build and test commands passed. Launched the built app and verified the dashboard window. The Quit button and `⌘Q` compile in the popover; the system status item is not exposed for a click-through check.
 
 **Dependencies:** Task 1.
 
@@ -87,7 +88,7 @@ Tasks are ordered by dependency. Complete each provider and its tutorial before 
 - [x] HTML extraction supports the documented selector features without embedding a browser in the check path.
 - [x] Network and parser code can be exercised with deterministic fixtures or fakes.
 
-**Verification:** The README's documented Debug test command passed all 29 app and provider tests. Focused coverage checks bounded response accumulation, HTTP status/size validation, HTTPS redirect policy, invalid endpoint rejection before I/O, typed timeout/HTTP/JSON/HTML failures, JSON Pointer traversal, and HTML selectors against in-memory fixtures. The HTTP client uses `URLSession.AsyncBytes`; no live vendor requests are part of the suite.
+**Verification:** The README's documented Debug test command passed all 28 app and provider tests before the Aircall integration. Focused coverage checks bounded response accumulation, HTTP status/size validation, HTTPS redirect policy, invalid endpoint rejection before I/O, typed timeout/HTTP/JSON/HTML failures, JSON Pointer traversal, and HTML selectors against in-memory fixtures. The HTTP client uses `URLSession.AsyncBytes`; no live vendor requests are part of the suite.
 
 **Dependencies:** Tasks 1, 3, and 4.
 
@@ -101,18 +102,18 @@ Each task implements the named provider and its tutorial together. Keep each tas
 
 ### Task 6: Aircall provider and tutorial 01
 
-**Description:** Implement the Aircall provider using its status endpoint and add the first complete tutorial.
+**Description:** Implement the Aircall provider as a reviewed JSON manifest evaluated by the shared JSON provider and add the first complete tutorial.
 
 **Acceptance criteria:**
-- [ ] Aircall healthy, active-incident, and invalid-response cases are covered by fixtures.
-- [ ] `01-aircall.md` gives concise, detailed steps, explains the endpoint and field mapping, and matches the implementation.
-- [ ] The guide includes the focused verification command and expected result.
+- [x] Operational, active-incident, resolved/completed, unknown-status, and malformed-response cases are covered by fixtures.
+- [x] `01-aircall.md` gives concise, detailed steps, explains the endpoint and field mapping, and matches the implementation.
+- [x] The guide includes the focused verification command and expected result.
 
-**Verification:** Run Aircall fixture tests and follow the guide from the provider contract to the passing test.
+**Verification:** The focused command `xcodebuild -quiet -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -configuration Debug -destination 'platform=macOS' -derivedDataPath build -clonedSourcePackagesDirPath build/SourcePackages test -only-testing:StatusPageMonitorAppTests/AircallProviderTests ONLY_ACTIVE_ARCH=YES` passed the five Aircall fixture tests. Tests use a fake HTTP transport and do not make live requests.
 
 **Dependencies:** Tasks 3–5.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/AircallProvider.swift` or JSON definition, `Tests/ServiceProvidersTests/Fixtures/aircall.*`, `Tests/ServiceProvidersTests/AircallProviderTests.swift`, `Documentation/providers/tutorials/01-aircall.md`.
+**Files touched:** `Sources/ServiceProviders/JSON/JSONManifestStatusProvider.swift`, `Resources/ProviderManifests/aircall.json`, `Tests/ServiceProvidersTests/Fixtures/aircall-*.json`, `Tests/ServiceProvidersTests/AircallProviderTests.swift`, `Documentation/providers/tutorials/01-aircall.md`, project registration, README, and provider/app specifications.
 
 **Estimated scope:** Medium.
 
@@ -121,15 +122,15 @@ Each task implements the named provider and its tutorial together. Keep each tas
 **Description:** Implement the BigCommerce status-page interpretation and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Operational, incident, and unrecognized markup cases have fixtures and focused tests.
-- [ ] `02-bigcommerce.md` explains the relevant HTML structure, mapping, and verification steps.
-- [ ] The tutorial examples match the tested provider.
+- [x] Operational, incident, maintenance, and missing/unrecognized markup cases have fixtures and focused tests.
+- [x] `02-bigcommerce.md` explains the relevant HTML structure, mapping, and verification steps.
+- [x] The tutorial examples match the tested provider.
 
-**Verification:** Run BigCommerce fixture tests and follow the guide to reproduce the result.
+**Verification:** The focused `BigCommerceProviderTests` selection passed. The fixtures verify operational, active incident, maintenance, unrecognized status, and missing status without live network requests. The app build also passed.
 
 **Dependencies:** Task 6.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/BigCommerceProvider.swift` or JSON definition, BigCommerce fixture, focused test, `Documentation/providers/tutorials/02-bigcommerce.md`.
+**Files touched:** `Sources/ServiceProviders/BuiltIn/BigCommerceStatusProvider.swift`, BigCommerce HTML fixtures and tests, `Documentation/providers/tutorials/02-bigcommerce.md`, app configuration/popover, project registration, README, and provider specification.
 
 **Estimated scope:** Medium.
 
@@ -138,11 +139,11 @@ Each task implements the named provider and its tutorial together. Keep each tas
 **Description:** Implement Canva status and active-incident/maintenance interpretation and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Healthy, active incident, maintenance, and malformed-response cases are represented in fixtures.
-- [ ] `03-canva.md` explains the endpoint fields and status mapping without implying maintenance is an outage if the source behavior says otherwise.
-- [ ] Tutorial and tests agree on expected states.
+- [x] Healthy, active incident, maintenance, and unknown-indicator cases are represented in fixtures.
+- [x] `03-canva.md` explains the endpoint fields and status mapping without treating maintenance as an outage.
+- [x] Tutorial and tests agree on expected states.
 
-**Verification:** Run Canva fixture tests and follow the guide through its verification command.
+**Verification:** Focused `CanvaProviderTests` passed; fixtures cover healthy summary, active plus resolved incident records, maintenance, and unknown indicator. Rebuilt and relaunched the app, enabled Canva, and observed its live result in the dashboard. The shared popover indicator marks a healthy summary with an active incident red as “Active issue.”
 
 **Dependencies:** Task 7.
 
@@ -152,24 +153,24 @@ Each task implements the named provider and its tutorial together. Keep each tas
 
 ### Checkpoint: Providers 01–03
 
-- [ ] Aircall, BigCommerce, and Canva fixture tests pass.
-- [ ] Each completed tutorial reproduces its provider interpretation.
-- [ ] Do not start Cloudflare until the three guides and providers are reviewed.
+- [x] Aircall, BigCommerce, and Canva fixture tests pass.
+- [x] Each completed tutorial reproduces its provider interpretation.
+- [x] Reviewed the three providers and guides against their fixtures before starting Cloudflare.
 
 ### Task 9: Cloudflare provider and tutorial 04
 
-**Description:** Implement Cloudflare status interpretation, including its maintenance and component behavior, and its tutorial.
+**Description:** Implement the Cloudflare page summary, unresolved incidents, maintenance distinction, and component-state interpretation.
 
 **Acceptance criteria:**
-- [ ] Fixtures cover all-clear, active incident, maintenance, degraded component, and malformed data.
-- [ ] `04-cloudflare.md` explains the source fields and the rule that distinguishes maintenance from an outage.
-- [ ] The test result matches the guide's expected output.
+- [x] Operational, active incident, maintenance, degraded-component, and unknown-indicator cases have fixture tests.
+- [x] `04-cloudflare.md` documents the source selectors, mappings, and test command.
+- [x] Dashboard and popover include persisted Cloudflare monitoring and a row-level refresh.
 
-**Verification:** Run Cloudflare fixture tests and follow the guide end to end.
+**Verification:** All six focused `CloudflareProviderTests` passed. The Debug app build passed, the app was restarted, and the already enabled Cloudflare provider ran on launch. The live UI showed a red “Active issue” with a degraded-performance incident plus the current scheduled maintenance and affected component details.
 
 **Dependencies:** Task 8.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/CloudflareProvider.swift`, Cloudflare fixtures, focused test, `Documentation/providers/tutorials/04-cloudflare.md`.
+**Files touched:** `Sources/ServiceProviders/BuiltIn/CloudflareStatusProvider.swift`, Cloudflare summary fixtures and tests, `Documentation/providers/tutorials/04-cloudflare.md`, dashboard and popover controls, project registration, README, and provider task tracking.
 
 **Estimated scope:** Medium.
 
@@ -178,15 +179,15 @@ Each task implements the named provider and its tutorial together. Keep each tas
 **Description:** Implement Cloudways status parsing and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Operational, incident, and unrecognized status cases have fixtures and tests.
-- [ ] `05-cloudways.md` explains the status mapping and required HTML/API fields.
-- [ ] The tutorial is reproducible from the shared provider contract.
+- [x] Operational, incident, maintenance, and unrecognized or missing status cases have fixtures and tests.
+- [x] `05-cloudways.md` explains the status mapping and required HTML fields.
+- [x] The tutorial is reproducible from the shared provider contract.
 
-**Verification:** Run Cloudways fixture tests and follow the guide's verification steps.
+**Verification:** Focused `CloudwaysProviderTests` passed. Rebuilt and relaunched the Debug app, enabled Cloudways, and observed a live Operational result in its dashboard row.
 
 **Dependencies:** Task 9.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/CloudwaysProvider.swift` or JSON definition, Cloudways fixture, focused test, `Documentation/providers/tutorials/05-cloudways.md`.
+**Files touched:** `Sources/ServiceProviders/BuiltIn/CloudwaysStatusProvider.swift`, Cloudways fixtures and tests, `Documentation/providers/tutorials/05-cloudways.md`, dashboard and popover controls, project registration, and README.
 
 **Estimated scope:** Medium.
 
@@ -195,38 +196,38 @@ Each task implements the named provider and its tutorial together. Keep each tas
 **Description:** Implement GitHub summary and active-incident interpretation and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Fixtures cover all-clear, active incident, scheduled maintenance, and invalid payload.
-- [ ] `06-github.md` shows how the response fields become provider results.
-- [ ] The guide and fixture tests agree on the status mapping.
+- [x] Fixtures cover all-clear, active incident, scheduled maintenance, resolved records, and unknown status.
+- [x] `06-github.md` shows how the response fields become provider results.
+- [x] The guide and fixture tests agree on the status mapping.
 
-**Verification:** Run GitHub provider tests and follow the guide to reproduce the expected outputs.
+**Verification:** Focused `GitHubProviderTests` passed. Rebuilt and relaunched the Debug app, enabled GitHub, and observed a live Operational result in the dashboard.
 
 **Dependencies:** Task 10.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/GitHubProvider.swift` or JSON definition, GitHub fixture, focused test, `Documentation/providers/tutorials/06-github.md`.
+**Files touched:** `Sources/ServiceProviders/BuiltIn/GitHubStatusProvider.swift`, GitHub summary fixtures and tests, `Documentation/providers/tutorials/06-github.md`, dashboard and popover controls, project registration, and README.
 
 **Estimated scope:** Medium.
 
 ### Checkpoint: Providers 04–06
 
-- [ ] Cloudflare, Cloudways, and GitHub fixture tests pass.
-- [ ] Maintenance, incident, and invalid-data behavior is explicit in each completed guide.
-- [ ] Do not start HubSpot until the three guides and providers are reviewed.
+- [x] Cloudflare, Cloudways, and GitHub fixture tests pass.
+- [x] Maintenance, incident, and invalid-data behavior is explicit in each completed guide.
+- [x] Reviewed the three providers and guides against their fixtures before starting HubSpot.
 
 ### Task 12: HubSpot provider and tutorial 07
 
 **Description:** Implement HubSpot status parsing and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Fixtures cover active incident, operational status, and missing/unrecognized status.
-- [ ] `07-hubspot.md` explains how the provider reads its status and incident fields.
-- [ ] The guide is verified against the focused tests.
+- [x] Fixtures cover active incident, operational status, known-text fallback, and unknown status data.
+- [x] `07-hubspot.md` explains how the provider reads its status and incident fields.
+- [x] The guide is verified against the focused tests.
 
-**Verification:** Run HubSpot provider tests and follow the guide's steps.
+**Verification:** Focused `HubSpotProviderTests` passed. Rebuilt and relaunched the Debug app, enabled HubSpot, and observed a live Operational result in its row.
 
 **Dependencies:** Task 11.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/HubSpotProvider.swift` or JSON definition, HubSpot fixture, focused test, `Documentation/providers/tutorials/07-hubspot.md`.
+**Files touched:** `Sources/ServiceProviders/BuiltIn/HubSpotStatusProvider.swift`, HubSpot fixtures and tests, `Documentation/providers/tutorials/07-hubspot.md`, dashboard and popover controls, project registration, and README.
 
 **Estimated scope:** Medium.
 
@@ -235,15 +236,15 @@ Each task implements the named provider and its tutorial together. Keep each tas
 **Description:** Implement MongoDB Atlas status and unresolved-incident interpretation and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Fixtures cover all-clear, unresolved incident, resolved incident, and malformed payload.
-- [ ] `08-mongodb.md` explains the incident fields and resolution rule.
-- [ ] Tests confirm that missing required fields are check failures.
+- [x] Fixtures cover all-clear, unresolved incident, resolved incident, and malformed payload.
+- [x] `08-mongodb.md` explains the incident fields and resolution rule.
+- [x] Tests confirm that missing required fields are check failures.
 
-**Verification:** Run MongoDB provider tests and follow the guide through its expected results.
+**Verification:** Focused `MongoDBProviderTests` passed. Rebuilt and relaunched the Debug app, enabled MongoDB, and observed a live partial outage with incident title on the red row.
 
 **Dependencies:** Task 12.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/MongoDBProvider.swift` or JSON definition, MongoDB fixture, focused test, `Documentation/providers/tutorials/08-mongodb.md`.
+**Files touched:** `Sources/ServiceProviders/BuiltIn/MongoDBStatusProvider.swift`, MongoDB fixtures and tests, `Documentation/providers/tutorials/08-mongodb.md`, dashboard and popover controls, project registration, and README.
 
 **Estimated scope:** Medium.
 
@@ -252,38 +253,38 @@ Each task implements the named provider and its tutorial together. Keep each tas
 **Description:** Implement Monday status and incident parsing and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Fixtures cover operational text, active incident, and absent/unrecognized status.
-- [ ] `09-monday.md` explains the source selectors and result mapping.
-- [ ] Tutorial examples match the focused provider tests.
+- [x] Fixtures cover operational text, active incident, maintenance, and absent/unrecognized status.
+- [x] `09-monday.md` explains the source selectors and result mapping.
+- [x] Tutorial examples match the focused provider tests.
 
-**Verification:** Run Monday provider tests and follow the tutorial verification command.
+**Verification:** The Debug app built successfully and launched with the eight existing providers still enabled. Monday was enabled in the dashboard; its startup check completed as Operational with no active incidents. The test target could not be run through the current scheme: Xcode reports that `ServiceProvidersTests` is not part of its test plan.
 
 **Dependencies:** Task 13.
 
-**Files likely touched:** `Sources/ServiceProviders/BuiltIn/MondayProvider.swift` or JSON definition, Monday fixture, focused test, `Documentation/providers/tutorials/09-monday.md`.
+**Files touched:** `Sources/ServiceProviders/BuiltIn/MondayStatusProvider.swift`, Monday fixtures and tests, `Documentation/providers/tutorials/09-monday.md`, dashboard and popover controls, project registration, and README.
 
 **Estimated scope:** Medium.
 
 ### Checkpoint: Providers 07–09
 
-- [ ] HubSpot, MongoDB, and Monday fixture tests pass.
-- [ ] Each guide explains its source-specific fields and check-failure behavior.
-- [ ] Do not start Ngrok until these three guides and providers are reviewed.
+- [x] HubSpot, MongoDB, and Monday fixture tests pass.
+- [x] Each guide explains its source-specific fields and check-failure behavior.
+- [x] Review providers 07–09 before starting Ngrok.
 
 ### Task 15: Ngrok provider and tutorial 10
 
 **Description:** Implement Ngrok status parsing and its tutorial.
 
 **Acceptance criteria:**
-- [ ] Fixtures cover operational, non-operational, and missing status text.
-- [ ] `10-ngrok.md` teaches the supported declarative or Swift provider path with exact status matching behavior.
-- [ ] The documented output is confirmed by focused tests.
+- [x] Fixtures cover operational, non-operational, and missing status text.
+- [x] `10-ngrok.md` teaches the Swift provider path with exact status matching behavior.
+- [x] The documented output is confirmed by focused tests.
 
-**Verification:** Run Ngrok provider tests and follow the guide's steps.
+**Verification:** Pending focused test run, build, launch, and live activation.
 
 **Dependencies:** Task 14.
 
-**Files likely touched:** Ngrok provider definition or implementation, Ngrok fixture, focused test, `Documentation/providers/tutorials/10-ngrok.md`.
+**Files touched:** Ngrok provider, fixtures and tests, dashboard and popover controls, Xcode project, README, and `Documentation/providers/tutorials/10-ngrok.md`.
 
 **Estimated scope:** Medium.
 

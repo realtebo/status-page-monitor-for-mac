@@ -1,0 +1,15 @@
+{
+  "page": {
+    "id": "glgfnjclpmlj",
+    "name": "Aircall",
+    "url": "https://status.aircall.com",
+    "time_zone": "Etc/UTC"
+  },
+  "components": [],
+  "incidents": [],
+  "scheduled_maintenances": [],
+  "status": {
+    "indicator": "none",
+    "description": "All Systems Operational"
+  }
+}

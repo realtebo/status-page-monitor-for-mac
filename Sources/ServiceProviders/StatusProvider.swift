@@ -119,6 +119,23 @@ struct ServiceObservation: Codable, Equatable, Sendable {
     let condition: ServiceCondition
     let activeIncidents: [ServiceIncident]
     let observedAt: Date
+    let providerReportsHealthy: Bool?
+
+    init(
+        condition: ServiceCondition,
+        activeIncidents: [ServiceIncident],
+        observedAt: Date,
+        providerReportsHealthy: Bool? = nil
+    ) {
+        self.condition = condition
+        self.activeIncidents = activeIncidents
+        self.observedAt = observedAt
+        self.providerReportsHealthy = providerReportsHealthy
+    }
+
+    var isOperational: Bool {
+        providerReportsHealthy ?? (condition == .operational && activeIncidents.isEmpty)
+    }
 }
 
 enum CheckFailureReason: Equatable, Sendable {

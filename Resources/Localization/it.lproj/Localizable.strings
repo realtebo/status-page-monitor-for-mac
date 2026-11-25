@@ -1,0 +1,82 @@
+/* Impostazioni lingua */
+"Language" = "Lingua";
+"User interface" = "Interfaccia utente";
+"System Default" = "Lingua di sistema";
+"English" = "Inglese";
+"Italian" = "Italiano";
+
+/* Shell dell'app */
+"Status Page Monitor" = "Status Page Monitor";
+"Status Page Monitor: %lld services not OK" = "Status Page Monitor: %lld servizi non OK";
+"Settings" = "Impostazioni";
+"About" = "Informazioni";
+"Version" = "Versione";
+"Created by Mirko Tebaldi" = "Creata da Mirko Tebaldi";
+"Contact" = "Contatti";
+"Quit Status Page Monitor" = "Esci da Status Page Monitor";
+"%lld services operational" = "%lld servizi operativi";
+"%lld services ok" = "%lld servizi operativi";
+"%lld servizi ok" = "%lld servizi ok";
+"🟢 %lld servizi ok" = "🟢 %lld servizi ok";
+"No services enabled" = "Nessun servizio attivo";
+"Nessun servizio ok." = "Nessun servizio operativo.";
+
+/* Configurazione monitoraggio */
+"Select a settings section" = "Seleziona una sezione delle impostazioni";
+"The enabled provider is checked as soon as the app starts and then at the selected interval." = "Il provider attivo viene verificato all'avvio dell'app e poi all'intervallo selezionato.";
+"Online service providers" = "Provider di servizi online";
+"Search providers" = "Cerca provider";
+"Clear search" = "Cancella ricerca";
+"No matching providers" = "Nessun provider trovato";
+"Check interval" = "Intervallo di controllo";
+"%lld minutes" = "%lld minuti";
+"Minimum 15 minutes, in 5-minute steps." = "Minimo 15 minuti, con incrementi di 5 minuti.";
+"Schedule" = "Pianificazione";
+
+/* Righe provider */
+"Since %@" = "Da %@";
+"Last updated %@" = "Ultimo aggiornamento %@";
+"Refresh %@" = "Aggiorna %@";
+"Open %@ status page" = "Apri la pagina di stato di %@";
+"Checking %@" = "Verifica di %@ in corso";
+"Check %@ now" = "Controlla %@ ora";
+"Details" = "Dettagli";
+
+/* Stato provider */
+"Disabled" = "Disabilitato";
+"Checking" = "Verifica in corso";
+"Maintenance" = "Manutenzione";
+"Active issue" = "Problema in corso";
+"Check failed" = "Controllo non riuscito";
+"Waiting" = "In attesa";
+"Operational" = "Operativo";
+"Degraded performance" = "Prestazioni ridotte";
+"Partial outage" = "Interruzione parziale";
+"Major outage" = "Interruzione grave";
+"No active incidents." = "Nessun incidente attivo.";
+"Checked at %@" = "Verificato alle %@";
+"Attempted at %@" = "Tentativo alle %@";
+
+/* Errori e riepiloghi provider */
+"Connection failed: %@" = "Connessione non riuscita: %@";
+"HTTP %lld response." = "Risposta HTTP %lld.";
+"Invalid response: %@" = "Risposta non valida: %@";
+"Required field missing: %@" = "Campo obbligatorio mancante: %@";
+"Unrecognized value '%@' at %@." = "Valore non riconosciuto '%@' in %@.";
+"Provider configuration error: %@" = "Errore di configurazione del provider: %@";
+"The bundled Aircall configuration could not be found." = "Impossibile trovare la configurazione Aircall inclusa.";
+"Monitoring is disabled." = "Monitoraggio disabilitato.";
+"Checking status…" = "Verifica dello stato in corso…";
+"Active issue: %@" = "Problema in corso: %@";
+"Could not reach %@." = "Impossibile raggiungere %@.";
+"Could not read %@ status." = "Impossibile leggere lo stato di %@.";
+"Waiting for first check." = "In attesa del primo controllo.";
+
+/* Manual refresh feedback */
+"The service is still operational." = "Il servizio è ancora operativo.";
+"The service is operational again." = "Il servizio è tornato operativo.";
+"The service is operational." = "Il servizio è operativo.";
+"The service still has issues." = "Il servizio ha ancora problemi.";
+"The service has an ongoing issue." = "Il servizio ha un problema in corso.";
+"Could not verify the service status." = "Non è stato possibile verificare lo stato del servizio.";
+"OK" = "OK";

@@ -69,6 +69,7 @@ struct ServiceRow: View {
 ## Success Criteria
 
 - The menu bar app remains available when the detail window closes.
+- The menu bar popover has an explicit **Quit Status Page Monitor** action; `⌘Q` invokes the same action.
 - The popover provides a compact aggregate status and quick access to details; the detail window lists all configured services and their current state.
 - First launch asks which services to monitor; subsequent launches restore that selection.
 - The user can configure a 15-minute-or-greater interval in five-minute increments and independently enable/disable each service.

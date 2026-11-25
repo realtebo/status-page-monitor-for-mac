@@ -1,0 +1,1 @@
+{"status":{"indicator":"none","description":"All Systems Operational"},"incidents":[{"id":"inc-old","name":"Resolved incident","status":"resolved","impact":"major"}],"scheduled_maintenances":[{"id":"maint-old","name":"Completed maintenance","status":"completed","impact":"maintenance"}]}

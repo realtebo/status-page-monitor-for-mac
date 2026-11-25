@@ -1,0 +1,1 @@
+{"status":{"indicator":"none","description":"All Systems Operational"},"components":[{"id":"cmp-1","name":"Network","status":"operational"}],"incidents":[{"id":"inc-1","name":"Dashboard access is degraded","status":"investigating","impact":"major","incident_updates":[{"body":"We are investigating dashboard access issues."}]}],"scheduled_maintenances":[]}

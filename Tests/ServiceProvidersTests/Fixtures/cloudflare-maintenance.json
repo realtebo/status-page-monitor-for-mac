@@ -1,0 +1,1 @@
+{"status":{"indicator":"none","description":"All Systems Operational"},"components":[{"id":"cmp-1","name":"Network","status":"under_maintenance"}],"incidents":[],"scheduled_maintenances":[{"id":"maint-1","name":"Scheduled network maintenance","status":"in_progress","impact":"maintenance"}]}

@@ -1,0 +1,1 @@
+{"status":{"indicator":"none","description":"All Systems Operational"},"incidents":[],"scheduled_maintenances":[{"id":"maint-1","name":"Database maintenance","status":"scheduled","impact":"maintenance"}]}

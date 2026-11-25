@@ -1,0 +1,33 @@
+{
+  "page": {
+    "id": "glgfnjclpmlj",
+    "name": "Aircall",
+    "url": "https://status.aircall.com",
+    "time_zone": "Etc/UTC"
+  },
+  "components": [],
+  "incidents": [
+    {
+      "id": "incident-001",
+      "name": "AI Voice Agent calls are delayed",
+      "status": "investigating",
+      "impact": "critical",
+      "shortlink": "https://status.aircall.com/incidents/incident-001",
+      "created_at": "2026-11-18T16:00:00.000Z",
+      "updated_at": "2026-11-18T16:55:00.000Z",
+      "incident_updates": [
+        {
+          "id": "update-001",
+          "status": "investigating",
+          "body": "We are investigating delayed responses and interrupted calls.",
+          "created_at": "2026-11-18T16:55:00.000Z"
+        }
+      ]
+    }
+  ],
+  "scheduled_maintenances": [],
+  "status": {
+    "indicator": "major",
+    "description": "Major System Outage"
+  }
+}
