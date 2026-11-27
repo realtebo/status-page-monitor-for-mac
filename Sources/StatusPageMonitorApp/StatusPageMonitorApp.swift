@@ -492,7 +492,7 @@ private final class MonitoringModel: ObservableObject {
             statusMenuService(.hubspot, "HubSpot", isHubSpotEnabled, isCheckingHubSpot, hubSpotResult) { await self.checkHubSpotNow() },
             statusMenuService(.mongodb, "MongoDB", isMongoDBEnabled, isCheckingMongoDB, mongoDBResult) { await self.checkMongoDBNow() },
             statusMenuService(.monday, "Monday", isMondayEnabled, isCheckingMonday, mondayResult) { await self.checkMondayNow() },
-            statusMenuService(.ngrok, "ngrok", isNgrokEnabled, isCheckingNgrok, ngrokResult) { await self.checkNgrokNow() },
+            statusMenuService(.ngrok, "Ngrok", isNgrokEnabled, isCheckingNgrok, ngrokResult) { await self.checkNgrokNow() },
             statusMenuService(.openai, "OpenAI", isOpenAIEnabled, isCheckingOpenAI, openAIResult) { await self.checkOpenAINow() },
             statusMenuService(.register, "Register.it", isRegisterEnabled, isCheckingRegister, registerResult) { await self.checkRegisterNow() },
             statusMenuService(.paypal, "PayPal", isPayPalEnabled, isCheckingPayPal, payPalResult) { await self.checkPayPalNow() },
@@ -872,7 +872,7 @@ private struct DashboardView: View {
             case .interface: "User interface"
             case .providers: "Online service providers"
             case .schedule: "Schedule"
-            case .newIssue: "New issue"
+            case .newIssue: "Contact us"
             case .updates: "Updates"
             case .about: "About"
             }
@@ -961,9 +961,16 @@ private struct DashboardView: View {
                         Text(verbatim: AppIdentity.contactEmail)
                     }
                     Link("GitHub repository", destination: AppIdentity.repositoryURL)
-                    Link("Pull requests", destination: AppIdentity.repositoryURL.appendingPathComponent("pulls"))
+                    Link("Issues", destination: AppIdentity.repositoryURL.appendingPathComponent("issues"))
                 } header: {
                     Label("Contact", systemImage: "envelope")
+                } footer: {
+                    Text("You can prefill a new issue from the [Contact us](settings://contact-us) tab.")
+                        .environment(\.openURL, OpenURLAction { url in
+                            guard url.absoluteString == "settings://contact-us" else { return .discarded }
+                            selectedSection = .newIssue
+                            return .handled
+                        })
                 }
             case .providers, nil:
                 Text("Select a settings section")

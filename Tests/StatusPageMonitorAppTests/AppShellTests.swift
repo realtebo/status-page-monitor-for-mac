@@ -187,7 +187,13 @@ private func confirmedUnreachableResult(
     let found = try await GitHubReleaseCheck(transport: ReleaseTestTransport(body: body)).latestMacRelease()
     #expect(found.tagName == "v0.10.1")
     #expect(found.appcastURL?.absoluteString == "\(base)/v0.10.1/appcast.xml")
-    #expect(GitHubReleaseVersion(tagName: "v0.02") == GitHubReleaseVersion(cfBundleShortVersionString: "0.2.0"))
+    let legacyRecords = [release("v0.02"), release("v0.0.3", signed: true), release("v0.01")]
+    let legacyBody = try JSONSerialization.data(withJSONObject: legacyRecords)
+    let migrated = try await GitHubReleaseCheck(transport: ReleaseTestTransport(body: legacyBody)).latestMacRelease()
+    #expect(migrated.tagName == "v0.0.3")
+    #expect(GitHubReleaseVersion(tagName: "v0.01") == GitHubReleaseVersion(major: 0, minor: 0, patch: 1))
+    #expect(GitHubReleaseVersion(cfBundleShortVersionString: "0.02") == GitHubReleaseVersion(major: 0, minor: 0, patch: 2))
+    #expect(GitHubReleaseVersion(tagName: "v0.2") == GitHubReleaseVersion(major: 0, minor: 2))
     #expect(GitHubReleaseVersion(tagName: "v1.0-beta") == nil)
 }
 
@@ -230,6 +236,23 @@ private struct ReleaseTestTransport: HTTPTransport {
     })
     reopened.startAtLaunch()
     #expect(!reopened.automaticChecks)
+}
+
+@MainActor
+@Test func manualUpdateCheckWorksWithAutomaticChecksDisabled() async throws {
+    let suite = "ManualUpdateTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let model = UpdateSettingsModel(defaults: defaults, releaseChecker: { nil })
+    model.automaticChecks = false
+
+    await model.checkNow()
+
+    #expect(model.didCompleteCheck)
+    #expect(!model.isChecking)
+    #expect(!model.automaticChecks)
+    #expect(model.lastCheckError == nil)
+    #expect(model.availableRelease == nil)
 }
 
 private actor UpdateClockProbe {

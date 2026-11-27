@@ -1,6 +1,6 @@
 # App updates
 
-The app checks the public GitHub Releases API at startup and hourly while automatic checks are enabled. It compares numeric version components and includes prereleases with the official Apple silicon ZIP. An available release appears in Settings and the menu bar. Notifications and automatic installation are separate opt-ins.
+The app checks the public GitHub Releases API at startup and hourly while automatic checks are enabled. It treats the historical tags `v0.01` and `v0.02` as `0.0.1` and `0.0.2`, compares numeric version components, and includes prereleases with the official Apple silicon ZIP. An available release appears in Settings and the menu bar. Notifications and automatic installation are separate opt-ins.
 
 A signed release includes a Sparkle 2.10.1 appcast alongside its ZIP. The app embeds the maintainer's public Ed25519 key and verifies the update before extraction. Sparkle normally installs a prepared update when the app quits. Older releases containing only a ZIP can still be announced. Users of v0.01 and v0.02 must install the first update-enabled release manually. The ad hoc macOS signature used for preview builds does not provide Apple Developer ID or notarization.
 

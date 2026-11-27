@@ -14,8 +14,9 @@
 "Contact" = "Contact";
 "Quit Status Page Monitor" = "Quit Status Page Monitor";
 "GitHub repository" = "GitHub repository";
-"Pull requests" = "Pull requests";
-"New issue" = "New issue";
+"Issues" = "Issues";
+"You can prefill a new issue from the [Contact us](settings://contact-us) tab." = "You can prefill a new issue from the [Contact us](settings://contact-us) tab.";
+"Contact us" = "Contact us";
 "%lld services operational" = "%lld services operational";
 "%lld services ok" = "%lld services operational";
 "%lld servizi ok" = "%lld services operational";
@@ -36,10 +37,10 @@
 "Schedule" = "Schedule";
 
 /* Issue reporting */
-"Feature" = "Feature";
-"Bug" = "Bug";
-"Idea" = "Idea";
-"How-to" = "How-to";
+"Request a new feature" = "Request a new feature";
+"Report a bug" = "Report a bug";
+"Suggest an idea" = "Suggest an idea";
+"Ask how to use the app" = "Ask how to use the app";
 "Enter a title before opening the GitHub issue form." = "Enter a title before opening the GitHub issue form.";
 "Enter a description before opening the GitHub issue form." = "Enter a description before opening the GitHub issue form.";
 "The GitHub issue form URL could not be created." = "The GitHub issue form URL could not be created.";
@@ -50,7 +51,6 @@
 "Description" = "Description";
 "Continue on GitHub" = "Continue on GitHub";
 "Review the draft on GitHub and publish it with your account." = "Review the draft on GitHub and publish it with your account.";
-"Report an issue" = "Report an issue";
 
 /* Provider rows */
 "Last OK %@" = "Last OK %@";
@@ -117,12 +117,12 @@
 "%1$@ is operational again. Recovered at %2$@." = "%1$@ is operational again. Recovered at %2$@.";
 
 /* App updates */
+"Check now" = "Check now";
 "Updates" = "Updates";
 "Check for updates automatically" = "Check for updates automatically";
 "Notify me when updates are available" = "Notify me when updates are available";
 "Install updates automatically" = "Install updates automatically";
 "Automatic checks run when the app starts and once per hour while enabled." = "Automatic checks run when the app starts and once per hour while enabled.";
-"Automatic installation is not available in this build." = "Automatic installation is not available in this build.";
 "Checking for updates…" = "Checking for updates…";
 "Version %@ is available" = "Version %@ is available";
 "View release notes" = "View release notes";

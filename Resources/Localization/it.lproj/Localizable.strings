@@ -15,8 +15,9 @@
 "Contact" = "Contatti";
 "Quit Status Page Monitor" = "Esci da Status Page Monitor";
 "GitHub repository" = "Repository GitHub";
-"Pull requests" = "Pull request";
-"New issue" = "Nuova issue";
+"Issues" = "Issue";
+"You can prefill a new issue from the [Contact us](settings://contact-us) tab." = "Dalla scheda [Contattaci](settings://contact-us) puoi precompilare una nuova issue.";
+"Contact us" = "Contattaci";
 "%lld services operational" = "%lld servizi operativi";
 "%lld services ok" = "%lld servizi operativi";
 "%lld servizi ok" = "%lld servizi ok";
@@ -37,10 +38,10 @@
 "Schedule" = "Pianificazione";
 
 /* Segnalazione issue */
-"Feature" = "Richiesta di funzionalità";
-"Bug" = "Segnalazione di un bug";
-"Idea" = "Suggerimento";
-"How-to" = "Domanda sull’uso dell’app";
+"Request a new feature" = "Richiesta di una nuova funzionalità";
+"Report a bug" = "Segnalazione di un bug";
+"Suggest an idea" = "Suggerimento o idea";
+"Ask how to use the app" = "Domanda su come usare l’app";
 "Enter a title before opening the GitHub issue form." = "Inserisci un titolo prima di aprire il modulo issue di GitHub.";
 "Enter a description before opening the GitHub issue form." = "Inserisci una descrizione prima di aprire il modulo issue di GitHub.";
 "The GitHub issue form URL could not be created." = "Non è stato possibile creare l'URL del modulo issue di GitHub.";
@@ -51,7 +52,6 @@
 "Description" = "Descrizione";
 "Continue on GitHub" = "Continua su GitHub";
 "Review the draft on GitHub and publish it with your account." = "Rivedi la bozza su GitHub e pubblicala con il tuo account.";
-"Report an issue" = "Segnala un problema";
 
 /* Righe provider */
 "Last OK %@" = "Ultimo OK %@";
@@ -118,12 +118,12 @@
 "%1$@ is operational again. Recovered at %2$@." = "%1$@ è tornato operativo. Ripristino alle %2$@.";
 
 /* App updates */
+"Check now" = "Verifica ora";
 "Updates" = "Aggiornamenti";
 "Check for updates automatically" = "Cerca nuovi aggiornamenti automaticamente";
 "Notify me when updates are available" = "Notifica nuovi aggiornamenti disponibili";
 "Install updates automatically" = "Installa automaticamente gli aggiornamenti";
 "Automatic checks run when the app starts and once per hour while enabled." = "Il controllo viene eseguito all’avvio e poi ogni ora mentre l’app è aperta.";
-"Automatic installation is not available in this build." = "Questa build non è configurata per installare gli aggiornamenti firmati.";
 "Checking for updates…" = "Ricerca degli aggiornamenti…";
 "Version %@ is available" = "È disponibile la versione %@";
 "View release notes" = "Vedi le note di rilascio";

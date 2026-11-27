@@ -1,6 +1,6 @@
 import Foundation
 
-/// Identifies a numeric version from an official release tag such as `v0.02.1`.
+/// Identifies a numeric version from an official release tag such as `v0.0.3`.
 struct GitHubReleaseVersion: Comparable, Equatable, Hashable, Sendable {
     let major: Int
     let minor: Int
@@ -203,6 +203,12 @@ extension GitHubReleaseVersion {
     }
 
     private init?(versionString: String) {
+        // The first two previews used compact tags before the three-part numbering began.
+        switch versionString {
+        case "0.01": self.init(major: 0, minor: 0, patch: 1); return
+        case "0.02": self.init(major: 0, minor: 0, patch: 2); return
+        default: break
+        }
         let components = versionString.split(separator: ".", omittingEmptySubsequences: false)
         guard (2...3).contains(components.count) else { return nil }
 

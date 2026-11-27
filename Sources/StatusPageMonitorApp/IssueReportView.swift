@@ -12,13 +12,13 @@ enum IssueReportCategory: String, CaseIterable, Identifiable, Sendable {
     var displayName: LocalizedStringKey {
         switch self {
         case .feature:
-            "Feature"
+            "Request a new feature"
         case .bug:
-            "Bug"
+            "Report a bug"
         case .idea:
-            "Idea"
+            "Suggest an idea"
         case .howTo:
-            "How-to"
+            "Ask how to use the app"
         }
     }
 }
@@ -116,10 +116,7 @@ struct IssueReportView: View {
         Section {
             Picker("Category", selection: $draft.category) {
                 ForEach(IssueReportCategory.allCases) { category in
-                    HStack(spacing: 6) {
-                        Text(verbatim: category.rawValue)
-                        Text(category.displayName)
-                    }
+                    Text(category.displayName)
                         .tag(category)
                 }
             }
@@ -157,7 +154,7 @@ struct IssueReportView: View {
                     .foregroundStyle(.red)
             }
         } header: {
-            Label("Report an issue", systemImage: "exclamationmark.bubble")
+            Label("Contact us", systemImage: "exclamationmark.bubble")
         }
     }
 

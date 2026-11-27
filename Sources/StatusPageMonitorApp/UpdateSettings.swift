@@ -65,7 +65,17 @@ final class UpdateSettingsModel: ObservableObject {
     var availableVersion: String? { availableRelease?.version }
     var availableReleaseURL: URL? { availableRelease?.releaseURL }
 
-    @Published private(set) var isChecking = false
+    private enum CheckSource: Equatable {
+        case manual
+        case scheduled(Int)
+    }
+
+    @Published private var activeCheck: CheckSource?
+    var isChecking: Bool { activeCheck != nil }
+
+    func checkNow() async {
+        await performCheck(from: .manual)
+    }
 
     @Published private(set) var lastCheckError: String?
 
@@ -128,13 +138,13 @@ final class UpdateSettingsModel: ObservableObject {
         scheduleTask?.cancel()
         scheduleTask = nil
         scheduleGeneration += 1
-        isChecking = false
+        if case .scheduled = activeCheck { activeCheck = nil }
         guard automaticChecks else { return }
         let generation = scheduleGeneration
         let wait = waitForNextCheck
         scheduleTask = Task { [weak self] in
             while !Task.isCancelled {
-                await self?.performCheck(generation: generation)
+                await self?.performCheck(from: .scheduled(generation))
                 do {
                     try await wait(.seconds(3_600))
                 } catch {
@@ -144,25 +154,27 @@ final class UpdateSettingsModel: ObservableObject {
         }
     }
 
-    private func performCheck(generation: Int) async {
-        guard automaticChecks, generation == scheduleGeneration else { return }
-        isChecking = true
+    private func performCheck(from source: CheckSource) async {
+        guard activeCheck == nil else { return }
+        if case .scheduled(let generation) = source {
+            guard automaticChecks, generation == scheduleGeneration else { return }
+        }
+        activeCheck = source
         defer {
-            if generation == scheduleGeneration { isChecking = false }
+            if activeCheck == source { activeCheck = nil }
         }
         do {
             let release = try await releaseChecker()
-            guard automaticChecks, generation == scheduleGeneration else { return }
-
+            guard activeCheck == source else { return }
             didCompleteCheck = true
             lastCheckError = nil
-
             availableRelease = release
-            guard let release else { return }
-            installKnownReleaseIfPossible()
-            await notifyIfNeeded(for: release, generation: generation)
+            if case .scheduled(let generation) = source, let release {
+                installKnownReleaseIfPossible()
+                await notifyIfNeeded(for: release, generation: generation)
+            }
         } catch {
-            guard automaticChecks, generation == scheduleGeneration else { return }
+            guard activeCheck == source else { return }
             lastCheckError = error.localizedDescription
         }
     }
@@ -235,7 +247,15 @@ struct UpdatesSettingsView: View {
 
     var body: some View {
         Section {
-            Toggle("Check for updates automatically", isOn: $model.automaticChecks)
+            Toggle(isOn: $model.automaticChecks) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Check for updates automatically")
+                    Text("Automatic checks run when the app starts and once per hour while enabled.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
 
             Toggle("Notify me when updates are available", isOn: $model.notifyWhenUpdatesAreAvailable)
                 .disabled(!model.automaticChecks)
@@ -243,20 +263,12 @@ struct UpdatesSettingsView: View {
             Toggle("Install updates automatically", isOn: automaticInstallationBinding)
                 .disabled(!model.automaticChecks || !updater.isAvailable)
 
-            Text("Automatic checks run when the app starts and once per hour while enabled.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            if !updater.isAvailable {
-                Label(
-                    "Automatic installation is not available in this build.",
-                    systemImage: "exclamationmark.triangle"
-                )
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Button("Check now") {
+                Task { await model.checkNow() }
             }
+            .disabled(model.isChecking)
 
-            if model.automaticChecks { updateStatus }
+            updateStatus
         } header: {
             Label("Updates", systemImage: "arrow.down.circle")
         }

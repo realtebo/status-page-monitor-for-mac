@@ -11,7 +11,7 @@ enum BuiltInServiceCatalog {
         service(.hubspot, "HubSpot", "https://status.hubspot.com/"),
         service(.mongodb, "MongoDB", "https://status.mongodb.com/"),
         service(.monday, "Monday", "https://status.monday.com/"),
-        service(.ngrok, "ngrok", "https://status.ngrok.com/"),
+        service(.ngrok, "Ngrok", "https://status.ngrok.com/"),
         service(.openai, "OpenAI", "https://status.openai.com/"),
         service(.register, "Register.it", "https://status.register.it/"),
         service(.paypal, "PayPal", "https://paypal-status.com/product/production"),
