@@ -9,16 +9,40 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
 
     @Published private(set) var authorizationStatus: UNAuthorizationStatus = .notDetermined
 
+    enum PermissionRequestState: Equatable {
+        case idle, requesting, undecided
+        case failed(String)
+    }
+
+    @Published private(set) var permissionRequestState: PermissionRequestState = .idle
+
+    private static let serviceAlertsKey = "notifications.serviceAlertsEnabled"
+    private nonisolated static let incidentCategoryID = "service-incident"
+    private nonisolated static let openStatusPageActionID = "open-service-status-page"
+    private nonisolated static let providerIDKey = "service-provider-id"
+    private let defaults: UserDefaults
+    @Published var serviceAlertsEnabled: Bool {
+        didSet { defaults.set(serviceAlertsEnabled, forKey: Self.serviceAlertsKey) }
+    }
+
+    var canPostServiceAlerts: Bool {
+        serviceAlertsEnabled && (authorizationStatus == .authorized || authorizationStatus == .provisional)
+    }
+
     private let center: UNUserNotificationCenter
 
-    init(center: UNUserNotificationCenter = .current()) {
+    init(center: UNUserNotificationCenter = .current(), defaults: UserDefaults = .standard) {
         self.center = center
+        self.defaults = defaults
+        defaults.register(defaults: [Self.serviceAlertsKey: true])
+        self.serviceAlertsEnabled = defaults.bool(forKey: Self.serviceAlertsKey)
         super.init()
     }
 
     /// Installs the foreground presentation delegate and reads the current system permission.
     func install() {
         center.delegate = self
+        center.setNotificationCategories([Self.incidentCategory(locale: LocalizationManager.shared.locale)])
         Task {
             await refreshAuthorizationStatus()
         }
@@ -28,35 +52,52 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
     func refreshAuthorizationStatus() async {
         let settings = await center.notificationSettings()
         authorizationStatus = settings.authorizationStatus
+        if authorizationStatus != .notDetermined && permissionRequestState != .requesting {
+            permissionRequestState = .idle
+        }
     }
 
     /// Requests permission after the user selects Enable notifications.
     func requestAuthorization() async {
-        do {
-            _ = try await center.requestAuthorization(options: [.alert, .sound])
-        } catch {
-            NSLog("Could not request notification permission: %@", String(describing: error))
+        await requestAuthorization {
+            _ = try await self.center.requestAuthorization(options: [.alert, .sound])
+            return await self.center.notificationSettings().authorizationStatus
         }
-        await refreshAuthorizationStatus()
+    }
+
+    func requestAuthorization(using request: () async throws -> UNAuthorizationStatus) async {
+        guard permissionRequestState != .requesting else { return }
+        permissionRequestState = .requesting
+        do {
+            authorizationStatus = try await request()
+            permissionRequestState = authorizationStatus == .notDetermined ? .undecided : .idle
+        } catch {
+            permissionRequestState = .failed(error.localizedDescription)
+        }
     }
 
     /// Posts a verified service status transition when notification permission is available.
     func post(
         _ transition: HealthTransition,
+        providerID: ServiceID,
         providerName: String,
         observation: ServiceObservation
     ) async {
+        guard serviceAlertsEnabled else { return }
         await refreshAuthorizationStatus()
-        guard authorizationStatus == .authorized || authorizationStatus == .provisional else {
-            return
-        }
+        guard canPostServiceAlerts else { return }
 
+        let locale = LocalizationManager.shared.locale
         let content = Self.makeContent(
             for: transition,
+            providerID: providerID,
             providerName: providerName,
             observation: observation,
-            locale: LocalizationManager.shared.locale
+            locale: locale
         )
+        if transition == .incident {
+            center.setNotificationCategories([Self.incidentCategory(locale: locale)])
+        }
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
@@ -73,6 +114,7 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
     /// Creates localized notification content, with an injectable locale for deterministic review.
     static func makeContent(
         for transition: HealthTransition,
+        providerID: ServiceID,
         providerName: String,
         observation: ServiceObservation,
         locale: Locale
@@ -82,6 +124,8 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
 
         switch transition {
         case .incident:
+            content.categoryIdentifier = incidentCategoryID
+            content.userInfo = [providerIDKey: providerID.rawValue]
             content.title = String(localized: "Service issue detected", locale: locale)
             let incidentTitles = observation.activeIncidents
                 .map { $0.title.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -116,6 +160,36 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
         return content
     }
 
+    static func incidentCategory(locale: Locale) -> UNNotificationCategory {
+        let openStatusPage = UNNotificationAction(
+            identifier: openStatusPageActionID,
+            title: String(localized: LocalizedStringResource("Open status page", locale: locale))
+        )
+        return UNNotificationCategory(
+            identifier: incidentCategoryID,
+            actions: [openStatusPage],
+            intentIdentifiers: []
+        )
+    }
+
+    nonisolated static func statusPageURL(actionIdentifier: String, userInfo: [AnyHashable: Any]) -> URL? {
+        guard actionIdentifier == openStatusPageActionID,
+              let rawID = userInfo[providerIDKey] as? String,
+              let providerID = ServiceID(rawValue: rawID) else { return nil }
+        return BuiltInServiceCatalog.definition(for: providerID)?.statusPageURL
+    }
+
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse
+    ) async {
+        guard let url = Self.statusPageURL(
+            actionIdentifier: response.actionIdentifier,
+            userInfo: response.notification.request.content.userInfo
+        ) else { return }
+        await MainActor.run { _ = NSWorkspace.shared.open(url) }
+    }
+
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -127,7 +201,6 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
 
 /// Shows and refreshes notification authorization in the Schedule settings.
 struct NotificationPermissionSection: View {
-    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var notifications: ServiceNotifications
 
     init(notifications: ServiceNotifications = .shared) {
@@ -136,18 +209,19 @@ struct NotificationPermissionSection: View {
 
     var body: some View {
         Section {
-            Text("Allow notifications to receive alerts about incidents and service recovery.")
-                .foregroundStyle(.secondary)
+            Toggle("Notify me about incidents and recoveries", isOn: $notifications.serviceAlertsEnabled)
+                .toggleStyle(.switch)
 
-            permissionContent
+            if notifications.serviceAlertsEnabled {
+                permissionContent
+            }
         } header: {
             Label("Service notifications", systemImage: "bell")
         }
         .task {
             await notifications.refreshAuthorizationStatus()
         }
-        .onChange(of: scenePhase) { phase in
-            guard phase == .active else { return }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             Task {
                 await notifications.refreshAuthorizationStatus()
             }
@@ -156,25 +230,55 @@ struct NotificationPermissionSection: View {
 
     @ViewBuilder
     private var permissionContent: some View {
-        switch notifications.authorizationStatus {
-        case .notDetermined:
-            Button("Enable notifications") {
-                Task {
-                    await notifications.requestAuthorization()
-                }
+        switch notifications.permissionRequestState {
+        case .requesting:
+            HStack {
+                ProgressView().controlSize(.small)
+                Text("Waiting for macOS notification permission…")
             }
-        case .denied:
-            Label(
-                "Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings.",
-                systemImage: "bell.slash"
-            )
-            .foregroundStyle(.secondary)
-        case .authorized, .provisional:
-            Label("Notifications are enabled.", systemImage: "checkmark.circle")
+        case .failed(let reason):
+            Label("macOS could not enable notifications.", systemImage: "exclamationmark.triangle")
+            Text(verbatim: reason).foregroundStyle(.secondary)
+            permissionActions
+        case .undecided:
+            Text("macOS has not confirmed notification permission.")
+            permissionActions
+        case .idle:
+            switch notifications.authorizationStatus {
+            case .notDetermined:
+                requestButton
+            case .denied:
+                Label(
+                    "Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings.",
+                    systemImage: "bell.slash"
+                )
                 .foregroundStyle(.secondary)
-        @unknown default:
-            Label("Notification permission status is unavailable.", systemImage: "questionmark.circle")
-                .foregroundStyle(.secondary)
+                settingsLink
+            case .authorized, .provisional:
+                EmptyView()
+            @unknown default:
+                Label("Notification permission status is unavailable.", systemImage: "questionmark.circle")
+                    .foregroundStyle(.secondary)
+                settingsLink
+            }
+        }
+    }
+
+    private var requestButton: some View {
+        Button("Enable notifications") {
+            Task { await notifications.requestAuthorization() }
+        }
+    }
+
+    private var settingsLink: some View {
+        Link("Open notification settings",
+             destination: URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension")!)
+    }
+
+    private var permissionActions: some View {
+        HStack {
+            requestButton
+            settingsLink
         }
     }
 }

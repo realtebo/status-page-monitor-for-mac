@@ -3,12 +3,6 @@ import Foundation
 import SwiftUI
 @preconcurrency import UserNotifications
 
-struct UpdateRelease: Equatable, Sendable {
-    let version: String
-    let releaseURL: URL
-    let appcastURL: URL?
-}
-
 private enum UpdateSettingsError: LocalizedError, Sendable {
     case invalidInstalledVersion
     case unsupportedArchitecture
@@ -27,7 +21,7 @@ private enum UpdateSettingsError: LocalizedError, Sendable {
 final class UpdateSettingsModel: ObservableObject {
     static let shared = UpdateSettingsModel()
 
-    typealias ReleaseChecker = @Sendable () async throws -> UpdateRelease?
+    typealias ReleaseChecker = @Sendable () async throws -> GitHubMacRelease
 
     @Published var automaticChecks: Bool {
         didSet {
@@ -61,7 +55,10 @@ final class UpdateSettingsModel: ObservableObject {
         }
     }
 
-    @Published private(set) var availableRelease: UpdateRelease?
+    let installedVersion: String?
+    @Published private(set) var lastCheckedAt: Date?
+    @Published private(set) var latestOnlineVersion: String?
+    @Published private(set) var availableRelease: GitHubMacRelease?
     var availableVersion: String? { availableRelease?.version }
     var availableReleaseURL: URL? { availableRelease?.releaseURL }
 
@@ -81,6 +78,8 @@ final class UpdateSettingsModel: ObservableObject {
 
     @Published private(set) var didCompleteCheck = false
 
+    private static let lastCheckedAtKey = "updates.lastCheckedAt"
+    private static let latestOnlineVersionKey = "updates.latestOnlineVersion"
     private static let automaticChecksKey = "updates.automaticChecks"
     private static let notificationPreferenceKey = "updates.notifyWhenAvailable"
     private static let automaticInstallationKey = "updates.automaticInstallation"
@@ -95,10 +94,14 @@ final class UpdateSettingsModel: ObservableObject {
 
     init(
         defaults: UserDefaults = .standard,
+        installedVersion: String? = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
         waitForNextCheck: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) },
         releaseChecker: @escaping ReleaseChecker = UpdateSettingsModel.checkGitHubReleases
     ) {
         self.defaults = defaults
+        self.installedVersion = installedVersion
+        lastCheckedAt = defaults.object(forKey: Self.lastCheckedAtKey) as? Date
+        latestOnlineVersion = defaults.string(forKey: Self.latestOnlineVersionKey)
         self.waitForNextCheck = waitForNextCheck
         self.releaseChecker = releaseChecker
         automaticChecks = defaults.object(forKey: Self.automaticChecksKey) as? Bool ?? true
@@ -115,22 +118,11 @@ final class UpdateSettingsModel: ObservableObject {
         restartSchedule()
     }
 
-    nonisolated private static func checkGitHubReleases() async throws -> UpdateRelease? {
-        guard let currentValue = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
-              let currentVersion = GitHubReleaseVersion(cfBundleShortVersionString: currentValue)
-        else { throw UpdateSettingsError.invalidInstalledVersion }
-
+    nonisolated private static func checkGitHubReleases() async throws -> GitHubMacRelease {
         #if !arch(arm64)
         throw UpdateSettingsError.unsupportedArchitecture
         #else
-        let release = try await GitHubReleaseCheck().latestMacRelease()
-        guard release.numericVersion > currentVersion else { return nil }
-
-        return UpdateRelease(
-            version: release.version,
-            releaseURL: release.releaseURL,
-            appcastURL: release.appcastURL
-        )
+        return try await GitHubReleaseCheck().latestMacRelease()
         #endif
     }
 
@@ -164,19 +156,32 @@ final class UpdateSettingsModel: ObservableObject {
             if activeCheck == source { activeCheck = nil }
         }
         do {
+            guard let installedVersion,
+                  let currentVersion = GitHubReleaseVersion(cfBundleShortVersionString: installedVersion)
+            else { throw UpdateSettingsError.invalidInstalledVersion }
             let release = try await releaseChecker()
             guard activeCheck == source else { return }
             didCompleteCheck = true
             lastCheckError = nil
-            availableRelease = release
-            if case .scheduled(let generation) = source, let release {
+            latestOnlineVersion = release.version
+            defaults.set(release.version, forKey: Self.latestOnlineVersionKey)
+            availableRelease = release.numericVersion > currentVersion ? release : nil
+            recordCheckTime()
+            if case .scheduled(let generation) = source, let release = availableRelease {
                 installKnownReleaseIfPossible()
                 await notifyIfNeeded(for: release, generation: generation)
             }
         } catch {
             guard activeCheck == source else { return }
             lastCheckError = error.localizedDescription
+            recordCheckTime()
         }
+    }
+
+    private func recordCheckTime() {
+        let completedAt = Date()
+        lastCheckedAt = completedAt
+        defaults.set(completedAt, forKey: Self.lastCheckedAtKey)
     }
 
     private func applyUpdaterConfiguration() {
@@ -197,7 +202,7 @@ final class UpdateSettingsModel: ObservableObject {
         OfficialUpdater.shared.installIfEnabled(appcastURL: appcastURL)
     }
 
-    private func notifyIfNeeded(for release: UpdateRelease, generation: Int) async {
+    private func notifyIfNeeded(for release: GitHubMacRelease, generation: Int) async {
         guard notifyWhenUpdatesAreAvailable else { return }
 
         await ServiceNotifications.shared.refreshAuthorizationStatus()
@@ -262,6 +267,27 @@ struct UpdatesSettingsView: View {
 
             Toggle("Install updates automatically", isOn: automaticInstallationBinding)
                 .disabled(!model.automaticChecks || !updater.isAvailable)
+
+            VStack(spacing: 6) {
+                LabeledContent("Installed version") {
+                    if let version = model.installedVersion {
+                        Text(verbatim: version)
+                    } else {
+                        Text("Unavailable")
+                    }
+                }
+                if let version = model.latestOnlineVersion {
+                    LabeledContent("Last version found on GitHub") { Text(verbatim: version) }
+                }
+                LabeledContent("Last update check") {
+                    if let date = model.lastCheckedAt {
+                        Text(date, format: .dateTime.day().month(.abbreviated).year().hour().minute())
+                    } else {
+                        Text("Never checked")
+                    }
+                }
+            }
+            .monospacedDigit()
 
             Button("Check now") {
                 Task { await model.checkNow() }

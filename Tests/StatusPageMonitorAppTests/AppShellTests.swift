@@ -38,6 +38,59 @@ import Testing
     #expect(AppIdentity.displayName == "Status Page Monitor")
 }
 
+@MainActor
+@Test func notificationPermissionReportsProgressAndAnUndecidedResult() async {
+    let notifications = ServiceNotifications()
+    var requests = 0
+    await notifications.requestAuthorization {
+        requests += 1
+        #expect(notifications.permissionRequestState == .requesting)
+        await notifications.requestAuthorization {
+            requests += 1
+            return .authorized
+        }
+        return .notDetermined
+    }
+    #expect(requests == 1)
+    #expect(notifications.permissionRequestState == .undecided)
+}
+
+@MainActor
+@Test func notificationPermissionShowsSystemErrorsAndAllowsRetry() async {
+    let notifications = ServiceNotifications()
+    let error = NSError(domain: "NotificationTest", code: 1,
+                        userInfo: [NSLocalizedDescriptionKey: "Permission request failed"])
+    await notifications.requestAuthorization { throw error }
+    #expect(notifications.permissionRequestState == .failed(error.localizedDescription))
+
+    await notifications.requestAuthorization { .denied }
+    #expect(notifications.authorizationStatus == .denied)
+    #expect(notifications.permissionRequestState == .idle)
+}
+
+@MainActor
+@Test func serviceAlertPreferenceSurvivesRelaunchAndRespectsSystemPermission() async {
+    let (defaults, suiteName) = makeConfirmedHealthDefaults()
+    defer { defaults.removePersistentDomain(forName: suiteName) }
+
+    let first = ServiceNotifications(defaults: defaults)
+    await first.requestAuthorization { .authorized }
+    #expect(first.canPostServiceAlerts)
+    first.serviceAlertsEnabled = false
+    #expect(!first.canPostServiceAlerts)
+    #expect(first.authorizationStatus == .authorized)
+
+    let reopened = ServiceNotifications(defaults: defaults)
+    await reopened.requestAuthorization { .provisional }
+    #expect(!reopened.serviceAlertsEnabled)
+    #expect(!reopened.canPostServiceAlerts)
+    reopened.serviceAlertsEnabled = true
+    #expect(reopened.canPostServiceAlerts)
+    await reopened.requestAuthorization { .denied }
+    #expect(!reopened.canPostServiceAlerts)
+    #expect(ServiceNotifications(defaults: defaults).serviceAlertsEnabled)
+}
+
 @Suite struct ConfirmedServiceHealthTests {
     @Test @MainActor func notificationIdentifiesIncidentAndRecoveryTime() {
         let incident = ServiceIncident(id: "a", title: "Queue delivery delayed", status: .identified,
@@ -47,13 +100,24 @@ import Testing
         let outage = ServiceObservation(condition: .degradedPerformance, activeIncidents: [incident], observedAt: date)
         let healthy = ServiceObservation(condition: .operational, activeIncidents: [], observedAt: date)
 
-        let alert = ServiceNotifications.makeContent(for: .incident, providerName: "Cloudflare", observation: outage, locale: locale)
-        let recovery = ServiceNotifications.makeContent(for: .recovery, providerName: "Cloudflare", observation: healthy, locale: locale)
+        let alert = ServiceNotifications.makeContent(for: .incident, providerID: .cloudflare, providerName: "Cloudflare", observation: outage, locale: locale)
+        let recovery = ServiceNotifications.makeContent(for: .recovery, providerID: .cloudflare, providerName: "Cloudflare", observation: healthy, locale: locale)
         #expect(alert.body.contains("Cloudflare"))
         #expect(alert.body.contains(incident.title))
         #expect(recovery.body.contains("Cloudflare"))
         #expect(recovery.body.contains(date.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale))))
         #expect(alert.title != recovery.title)
+        let category = ServiceNotifications.incidentCategory(locale: locale)
+        #expect(category.actions.map(\.title) == ["Apri pagina di stato"])
+        #expect(ServiceNotifications.incidentCategory(locale: Locale(identifier: "en")).actions.map(\.title)
+            == ["Open status page"])
+        #expect(alert.categoryIdentifier == category.identifier)
+        #expect(recovery.categoryIdentifier.isEmpty)
+        let action = category.actions.first?.identifier ?? ""
+        #expect(ServiceNotifications.statusPageURL(actionIdentifier: action, userInfo: alert.userInfo)
+            == BuiltInServiceCatalog.definition(for: .cloudflare)?.statusPageURL)
+        #expect(ServiceNotifications.statusPageURL(actionIdentifier: action, userInfo: recovery.userInfo) == nil)
+        #expect(ServiceNotifications.statusPageURL(actionIdentifier: "other-action", userInfo: alert.userInfo) == nil)
     }
 
     @Test func confirmedHealthUsesTheFirstResultAsItsBaseline() {
@@ -85,6 +149,94 @@ import Testing
         #expect(health.record(confirmedObservedResult(.majorOutage), for: .aircall, source: .automatic) == nil)
         #expect(health.record(confirmedObservedResult(.operational), for: .aircall, source: .automatic) == .recovery)
         #expect(health.isOperational(.aircall) == true)
+    }
+
+    @Test func greenStartsAtFirstOKOrLastConfirmedKOAndYellowHidesTheDuration() {
+        let (defaults, suiteName) = makeConfirmedHealthDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        var health = ConfirmedServiceHealth(defaults: defaults)
+        let start = Date(timeIntervalSince1970: 1_000)
+        let up = confirmedObservedResult(.operational, at: start)
+        let sameUp = confirmedObservedResult(.operational, at: start.addingTimeInterval(900))
+        let firstKO = start.addingTimeInterval(1_800)
+        let down = confirmedObservedResult(.majorOutage, at: firstKO)
+        let failed = confirmedUnreachableResult(at: firstKO.addingTimeInterval(300))
+        _ = health.record(up, for: .aircall, source: .automatic)
+        _ = health.record(failed, for: .github, source: .automatic)
+        _ = health.record(sameUp, for: .aircall, source: .manual)
+        #expect(health.period(for: .aircall, result: sameUp) == ServiceHealthPeriod(isOperational: true, startedAt: start))
+        _ = health.record(down, for: .github, source: .manual)
+        _ = health.record(down, for: .aircall, source: .automatic)
+        _ = health.record(failed, for: .aircall, source: .automatic)
+        #expect(health.period(for: .aircall, result: failed) == nil)
+        health = ConfirmedServiceHealth(defaults: defaults)
+        let lastKO = firstKO.addingTimeInterval(900)
+        let laterKO = confirmedObservedResult(.partialOutage, at: lastKO)
+        _ = health.record(laterKO, for: .aircall, source: .manual)
+        let expectedKO = ServiceHealthPeriod(isOperational: false, startedAt: firstKO)
+        #expect(health.period(for: .github, result: down) == expectedKO)
+        #expect(health.period(for: .aircall, result: laterKO) == expectedKO)
+        let unavailable = confirmedUnreachableResult(at: lastKO.addingTimeInterval(600))
+        _ = health.record(unavailable, for: .aircall, source: .automatic)
+        health = ConfirmedServiceHealth(defaults: defaults)
+        let back = firstKO.addingTimeInterval(3_600)
+        let restored = confirmedObservedResult(.operational, at: back)
+        #expect(health.record(restored, for: .aircall, source: .automatic) == .recovery)
+        let expectedUp = ServiceHealthPeriod(isOperational: true, startedAt: lastKO)
+        #expect(health.period(for: .aircall, result: restored) == expectedUp)
+        let stillUp = confirmedObservedResult(.operational, at: back.addingTimeInterval(900))
+        _ = health.record(stillUp, for: .aircall, source: .manual)
+        #expect(ConfirmedServiceHealth(defaults: defaults).period(for: .aircall, result: stillUp) == expectedUp)
+    }
+
+    @Test func observedFirstAndLastDatesSurviveRelaunchAndRecovery() {
+        let (defaults, suiteName) = makeConfirmedHealthDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let start = Date(timeIntervalSince1970: 1_000)
+        func date(_ minutes: Int) -> Date { start.addingTimeInterval(Double(minutes) * 60) }
+        func record(_ state: ServiceCondition, at minute: Int) {
+            var reloaded = ConfirmedServiceHealth(defaults: defaults)
+            _ = reloaded.record(confirmedObservedResult(state, at: date(minute)), for: .github, source: .automatic)
+        }
+        func dates() -> [String: [String: Date]] {
+            defaults.dictionary(forKey: "monitor.confirmedHealthPeriods") as? [String: [String: Date]] ?? [:]
+        }
+        record(.operational, at: 0)
+        record(.operational, at: 180)
+        record(.majorOutage, at: 200)
+        record(.partialOutage, at: 220)
+        #expect(dates()["firstOK"]?["github"] == date(0))
+        #expect(dates()["lastOK"]?["github"] == date(180))
+        record(.operational, at: 240)
+        record(.operational, at: 360)
+        let saved = dates()
+        #expect(saved["firstOK"]?["github"] == date(240))
+        #expect(saved["lastOK"]?["github"] == date(360))
+        #expect(saved["down"]?["github"] == date(200))
+        #expect(saved["lastKO"]?["github"] == date(220))
+        var reloaded = ConfirmedServiceHealth(defaults: defaults)
+        _ = reloaded.record(confirmedUnreachableResult(at: date(380)), for: .github, source: .manual)
+        #expect(dates() == saved)
+        record(.partialOutage, at: 400)
+        #expect(dates()["down"]?["github"] == date(400))
+    }
+
+    @Test func legacyPeriodsUseOnlyObservationsOfTheCurrentConfirmedState() {
+        let (defaults, suiteName) = makeConfirmedHealthDefaults()
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let first = Date(timeIntervalSince1970: 1_000)
+        let lastOK = first.addingTimeInterval(600)
+        defaults.set(["github": false, "aircall": false, "stripe": true], forKey: "monitor.confirmedServiceHealth")
+        defaults.set(["github": first, "aircall": first], forKey: "monitor.firstObservedIssueAt")
+        defaults.set(["aircall": lastOK.timeIntervalSince1970, "stripe": lastOK.timeIntervalSince1970], forKey: "monitor.lastOperationalAt")
+        var health = ConfirmedServiceHealth(defaults: defaults)
+        let later = first.addingTimeInterval(900)
+        let issue = confirmedObservedResult(.majorOutage, at: later)
+        #expect(health.period(for: .github, result: issue) == ServiceHealthPeriod(isOperational: false, startedAt: first))
+        #expect(health.period(for: .aircall, result: issue) == nil)
+        #expect(health.record(issue, for: .aircall, source: .automatic) == nil)
+        #expect(health.period(for: .aircall, result: issue) == ServiceHealthPeriod(isOperational: false, startedAt: later))
+        #expect(health.period(for: .stripe, result: confirmedObservedResult(.operational)) == ServiceHealthPeriod(isOperational: true, startedAt: lastOK))
     }
 
     @Test func confirmedHealthDoesNotReportTransitionsForUnchangedObservations() {
@@ -207,14 +359,19 @@ private struct ReleaseTestTransport: HTTPTransport {
     }
 }
 
+private func testMacRelease(_ tag: String) throws -> GitHubMacRelease {
+    GitHubMacRelease(tagName: tag, numericVersion: try #require(GitHubReleaseVersion(tagName: tag)),
+                     releaseURL: AppIdentity.repositoryURL, downloadURL: AppIdentity.repositoryURL, appcastURL: nil)
+}
+
 @MainActor
 @Test func updatePreferencesCheckAtLaunchAndAfterOneHour() async throws {
     let suite = "UpdateSettingsTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let probe = UpdateClockProbe()
-    let release = UpdateRelease(version: "0.03", releaseURL: AppIdentity.repositoryURL, appcastURL: nil)
-    let model = UpdateSettingsModel(defaults: defaults, waitForNextCheck: { duration in
+    let release = try testMacRelease("v0.0.4")
+    let model = UpdateSettingsModel(defaults: defaults, installedVersion: "0.0.3", waitForNextCheck: { duration in
         try await probe.wait(duration)
     }, releaseChecker: {
         await probe.checked()
@@ -232,7 +389,7 @@ private struct ReleaseTestTransport: HTTPTransport {
     model.automaticChecks = false
     let reopened = UpdateSettingsModel(defaults: defaults, releaseChecker: {
         Issue.record("The disabled release check ran at launch")
-        return nil
+        return release
     })
     reopened.startAtLaunch()
     #expect(!reopened.automaticChecks)
@@ -243,7 +400,11 @@ private struct ReleaseTestTransport: HTTPTransport {
     let suite = "ManualUpdateTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
-    let model = UpdateSettingsModel(defaults: defaults, releaseChecker: { nil })
+    let release = try testMacRelease("v0.0.3")
+    let model = UpdateSettingsModel(defaults: defaults, installedVersion: release.version, releaseChecker: { release })
+    #expect(model.installedVersion == "0.0.3")
+    #expect(model.lastCheckedAt == nil)
+    #expect(model.latestOnlineVersion == nil)
     model.automaticChecks = false
 
     await model.checkNow()
@@ -253,6 +414,19 @@ private struct ReleaseTestTransport: HTTPTransport {
     #expect(!model.automaticChecks)
     #expect(model.lastCheckError == nil)
     #expect(model.availableRelease == nil)
+    #expect(model.latestOnlineVersion == "0.0.3")
+    let checkedAt = try #require(model.lastCheckedAt)
+
+    let reopened = UpdateSettingsModel(defaults: defaults, installedVersion: release.version, releaseChecker: {
+        throw URLError(.notConnectedToInternet)
+    })
+    #expect(reopened.latestOnlineVersion == release.version)
+    #expect(reopened.lastCheckedAt == checkedAt)
+    await reopened.checkNow()
+    #expect(reopened.lastCheckError != nil)
+    #expect(reopened.latestOnlineVersion == release.version)
+    let retryTime = try #require(reopened.lastCheckedAt)
+    #expect(retryTime >= checkedAt)
 }
 
 private actor UpdateClockProbe {

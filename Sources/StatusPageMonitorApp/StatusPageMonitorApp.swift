@@ -13,30 +13,31 @@ enum AppIdentity {
 @main
 struct StatusPageMonitorApp: App {
     @NSApplicationDelegateAdaptor(AppLifecycleDelegate.self) private var appLifecycle
-    @StateObject private var monitor = MonitoringModel.shared
-    @StateObject private var localization = LocalizationManager.shared
-
     var body: some Scene {
-        MenuBarExtra {
-            StatusBarMenu(openSettings: appLifecycle.openSettings)
-                .environmentObject(monitor)
-                .environment(\.locale, localization.locale)
-        } label: {
-            StatusBarLabel(nonOKCount: monitor.nonOKServiceCount)
-                .environment(\.locale, localization.locale)
-        }
-        .menuBarExtraStyle(.menu)
+        Settings { EmptyView() }
+            .commands {
+                CommandGroup(replacing: .appSettings) {
+                    Button("Settings", action: appLifecycle.openSettings)
+                        .keyboardShortcut(",", modifiers: .command)
+                }
+            }
     }
 }
 
 @MainActor
 final class AppLifecycleDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    private var statusMenu: StatusMenuController?
     private(set) var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        statusMenu = StatusMenuController { [weak self] in self?.openSettings() }
         ServiceNotifications.shared.install()
         MonitoringModel.shared.startChecksAtLaunch()
         UpdateSettingsModel.shared.startAtLaunch()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        statusMenu?.remove()
     }
 
     func openSettings() {
@@ -236,7 +237,6 @@ private final class MonitoringModel: ObservableObject {
     @Published private(set) var isCheckingSlack = false
     @Published private(set) var isCheckingStripe = false
     @Published private(set) var isCheckingVercel = false
-    private var lastOperationalAt: [String: Date]
 
     private static let enabledDefaultsKey = "monitor.aircall.enabled"
     private static let bigCommerceEnabledDefaultsKey = "monitor.bigcommerce.enabled"
@@ -254,7 +254,6 @@ private final class MonitoringModel: ObservableObject {
     private static let slackEnabledDefaultsKey = "monitor.slack.enabled"
     private static let stripeEnabledDefaultsKey = "monitor.stripe.enabled"
     private static let vercelEnabledDefaultsKey = "monitor.vercel.enabled"
-    private static let lastOperationalAtDefaultsKey = "monitor.lastOperationalAt"
     private static let intervalDefaultsKey = "monitor.intervalMinutes"
 
     private var didStartAtLaunch = false
@@ -283,9 +282,6 @@ private final class MonitoringModel: ObservableObject {
         isSlackEnabled = defaults.object(forKey: Self.slackEnabledDefaultsKey) as? Bool ?? false
         isStripeEnabled = defaults.object(forKey: Self.stripeEnabledDefaultsKey) as? Bool ?? false
         isVercelEnabled = defaults.object(forKey: Self.vercelEnabledDefaultsKey) as? Bool ?? false
-        lastOperationalAt = (defaults.dictionary(forKey: Self.lastOperationalAtDefaultsKey) as? [String: Double] ?? [:])
-            .mapValues(Date.init(timeIntervalSince1970:))
-
         let savedInterval = defaults.object(forKey: Self.intervalDefaultsKey) as? Int ?? 15
         intervalMinutes = savedInterval >= 15 && savedInterval.isMultiple(of: 5) ? savedInterval : 15
     }
@@ -521,7 +517,7 @@ private final class MonitoringModel: ObservableObject {
             isEnabled: enabled,
             isChecking: checking,
             result: result,
-            lastOperationalAt: lastOperationalAt[id.rawValue],
+            timing: result.flatMap { confirmedHealth.period(for: id, result: $0) },
             refresh: refresh
         )
     }
@@ -553,7 +549,7 @@ private final class MonitoringModel: ObservableObject {
         var details: [RefreshDetails] = []
         for (provider, check) in zip(providers, checks) {
             guard let result = await check.value else { continue }
-            if let detail = RefreshDetails(result, providerName: provider.name) {
+            if let detail = RefreshDetails(result, providerName: provider.name, timing: confirmedHealth.period(for: provider.id, result: result)) {
                 details.append(detail)
             }
             switch result {
@@ -577,10 +573,10 @@ private final class MonitoringModel: ObservableObject {
 
         let previousHealth = confirmedHealth.isOperational(id)
         guard let result = await refreshTask(for: provider, source: .manual).value else { return }
-        presentRefreshResult(result, for: provider.name, previousHealth: previousHealth)
+        presentRefreshResult(result, for: provider, previousHealth: previousHealth)
     }
 
-    private func presentRefreshResult(_ result: ProviderCheckResult, for name: String, previousHealth: Bool?) {
+    private func presentRefreshResult(_ result: ProviderCheckResult, for provider: StatusMenuService, previousHealth: Bool?) {
         let locale = LocalizationManager.shared.locale
         let message: LocalizedStringResource
 
@@ -599,14 +595,18 @@ private final class MonitoringModel: ObservableObject {
             message = LocalizedStringResource("Could not verify the service status.", locale: locale)
         }
 
-        let details = RefreshDetails(result)
-        presentRefreshPanel(title: name, message: message, details: details.map { [$0] } ?? [])
+        let timing = confirmedHealth.period(for: provider.id, result: result)
+        let details = RefreshDetails(result, timing: timing)
+        presentRefreshPanel(title: provider.name, message: message, details: details.map { [$0] } ?? [],
+                            summaryTiming: details == nil ? timing : nil)
     }
 
-    private func presentRefreshPanel(title: String, message: LocalizedStringResource, details: [RefreshDetails]) {
+    private func presentRefreshPanel(title: String, message: LocalizedStringResource, details: [RefreshDetails], summaryTiming: ServiceHealthPeriod? = nil) {
         let locale = LocalizationManager.shared.locale
+        let panelSize = details.isEmpty ? NSSize(width: 350, height: summaryTiming == nil ? 105 : 130)
+            : NSSize(width: 500, height: details.count > 1 ? 350 : 300)
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: details.isEmpty ? 350 : 480, height: details.isEmpty ? 105 : 300),
+            contentRect: NSRect(origin: .zero, size: panelSize),
             styleMask: [.titled],
             backing: .buffered,
             defer: false
@@ -614,7 +614,7 @@ private final class MonitoringModel: ObservableObject {
         panel.title = title
         panel.hidesOnDeactivate = false
         panel.contentView = NSHostingView(rootView:
-            RefreshResultView(message: String(localized: message), details: details) { [weak panel] in
+            RefreshResultView(message: String(localized: message), details: details, summaryTiming: summaryTiming) { [weak panel] in
                 NSApplication.shared.stopModal()
                 panel?.orderOut(nil)
             }
@@ -636,15 +636,10 @@ private final class MonitoringModel: ObservableObject {
     private func record(_ result: ProviderCheckResult, for provider: StatusMenuService, source: CheckSource) async {
         let transition = confirmedHealth.record(result, for: provider.id, source: source)
         guard case .observed(let observation) = result else { return }
-        if observation.isOperational {
-            lastOperationalAt[provider.id.rawValue] = observation.observedAt
-            UserDefaults.standard.set(
-                lastOperationalAt.mapValues(\.timeIntervalSince1970),
-                forKey: Self.lastOperationalAtDefaultsKey
-            )
-        }
         if let transition {
-            await ServiceNotifications.shared.post(transition, providerName: provider.name, observation: observation)
+            await ServiceNotifications.shared.post(
+                transition, providerID: provider.id, providerName: provider.name, observation: observation
+            )
         }
     }
 
@@ -692,7 +687,15 @@ private struct RefreshDetails {
     let providerName: String?
     let result: ProviderCheckResult
 
-    init?(_ result: ProviderCheckResult, providerName: String? = nil) {
+    let timing: ServiceHealthPeriod?
+
+    var isFailedCheck: Bool {
+        if case .failed = result { return true }
+        return false
+    }
+
+    init?(_ result: ProviderCheckResult, providerName: String? = nil, timing: ServiceHealthPeriod?) {
+        self.timing = timing
         if case .observed(let observation) = result, observation.isOperational { return nil }
         self.providerName = providerName
         self.result = result
@@ -702,160 +705,350 @@ private struct RefreshDetails {
 private struct RefreshResultView: View {
     let message: String
     let details: [RefreshDetails]
+    let summaryTiming: ServiceHealthPeriod?
     let dismiss: () -> Void
 
+    @Environment(\.locale) private var locale
+    @State private var hasMoreBelow = false
+
     var body: some View {
-        VStack(alignment: .trailing, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(verbatim: message)
+                .fontWeight(.medium)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
+            if let summaryTiming {
+                HealthDurationLabel(period: summaryTiming).foregroundStyle(.secondary)
+            }
+
             if !details.isEmpty {
-                Divider()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        ForEach(details.indices, id: \.self) { index in
-                            let detail = details[index]
-                            VStack(alignment: .leading, spacing: 6) {
-                                if let name = detail.providerName {
-                                    Text(verbatim: name).font(.headline)
-                                }
-                                switch detail.result {
-                                case .failed(let failure):
-                                    Text(failureDescription(failure.reason))
-                                case .observed(let observation):
-                                    if observation.activeIncidents.isEmpty {
-                                        Text(observation.condition == .operational ? "No active incidents." : conditionLabel(observation.condition))
-                                    }
-                                    ForEach(observation.activeIncidents.indices, id: \.self) { index in
-                                        let incident = observation.activeIncidents[index]
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Text(verbatim: incident.title).fontWeight(.medium)
-                                            if let summary = incident.summary?.trimmingCharacters(in: .whitespacesAndNewlines),
-                                               !summary.isEmpty, summary != incident.title {
-                                                Text(verbatim: summary)
-                                            }
-                                        }
-                                    }
-                                }
+                if details.first?.providerName != nil {
+                    Text(listHeading)
+                        .font(.subheadline.weight(.semibold))
+                        .accessibilityAddTraits(.isHeader)
+                }
+                GeometryReader { viewport in
+                    let viewportHeight = viewport.size.height
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(details.indices, id: \.self) { index in
+                                if index > 0 { Divider() }
+                                detailRow(details[index])
                             }
                         }
+                        .padding(.horizontal, 14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                        .onGeometryChange(for: Bool.self) { content in
+                            content.frame(in: .named("refreshViewport")).maxY > viewportHeight + 1
+                        } action: { hasMoreBelow = $0 }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
+                    .coordinateSpace(name: "refreshViewport")
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(.quaternary)
+                            .allowsHitTesting(false)
+                    }
                 }
             }
 
-            Button("OK", action: dismiss)
-                .keyboardShortcut(.defaultAction)
+            HStack {
+                if hasMoreBelow {
+                    Text("Scroll for more details")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("OK", action: dismiss)
+                    .keyboardShortcut(.defaultAction)
+            }
         }
         .padding(16)
         .onExitCommand(perform: dismiss)
     }
-}
 
-private struct StatusBarLabel: View {
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.displayScale) private var displayScale
-    @Environment(\.locale) private var locale
-    let nonOKCount: Int
+    private var listHeading: LocalizedStringKey {
+        if details.allSatisfy(\.isFailedCheck) { return "Services with failed checks" }
+        if details.contains(where: \.isFailedCheck) { return "Services with issues or failed checks" }
+        return "Services with ongoing issues"
+    }
 
-    var body: some View {
-        Group {
-            if nonOKCount > 0 {
-                if let image = renderedLabel {
-                    Image(nsImage: image)
+    private func detailRow(_ detail: RefreshDetails) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 9) {
+            switch detail.result {
+            case .failed:
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                    .accessibilityLabel(Text("Check failed"))
+            case .observed:
+                Image(systemName: "exclamationmark.circle.fill")
+                    .foregroundStyle(.red)
+                    .accessibilityLabel(Text("Active issue"))
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline) {
+                    if let name = detail.providerName {
+                        Text(verbatim: name).font(.headline)
+                        Spacer(minLength: 8)
+                    }
+                    if let timing = detail.timing {
+                        HealthDurationLabel(period: timing)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-            } else {
-                Image(systemName: AppIdentity.symbolName)
+                switch detail.result {
+                case .failed(let failure):
+                    Text(failureDescription(failure.reason))
+                case .observed(let observation):
+                    if observation.activeIncidents.isEmpty {
+                        if observation.condition == .operational { Text("No active incidents.") }
+                        else { Text(conditionName(observation.condition, locale: locale)) }
+                    }
+                    ForEach(observation.activeIncidents.indices, id: \.self) { index in
+                        let incident = observation.activeIncidents[index]
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(verbatim: incident.title).fontWeight(.medium)
+                            if let summary = incident.summary?.trimmingCharacters(in: .whitespacesAndNewlines),
+                               !summary.isEmpty, summary != incident.title {
+                                Text(verbatim: summary)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
             }
+            .fixedSize(horizontal: false, vertical: true)
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(nonOKCount > 0
-            ? Text("Status Page Monitor: \(nonOKCount) services not OK")
-            : Text(verbatim: AppIdentity.displayName))
-    }
-
-    private var renderedLabel: NSImage? {
-        // Render the icon and count together so the native status item retains the red text.
-        let renderer = ImageRenderer(content:
-            HStack(spacing: 4) {
-                Image(systemName: AppIdentity.symbolName)
-                    .foregroundStyle(.primary)
-                Text(nonOKCount, format: .number)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color(nsColor: .systemRed))
-            }
-            .font(.system(size: 14))
-            .frame(height: 18)
-            .fixedSize()
-            .environment(\.colorScheme, colorScheme)
-            .environment(\.locale, locale)
-        )
-        renderer.scale = displayScale
-        let image = renderer.nsImage
-        image?.isTemplate = false
-        return image
+        .padding(.vertical, 10)
     }
 }
 
-private struct StatusBarMenu: View {
-    let openSettings: () -> Void
-    @ObservedObject private var updates = UpdateSettingsModel.shared
-    @EnvironmentObject private var monitor: MonitoringModel
+private struct HealthDurationLabel: View {
+    let period: ServiceHealthPeriod
+    @Environment(\.locale) private var locale
 
     var body: some View {
-        let providers = monitor.statusMenuServices
-        let operationalProviders = providers.filter(\.isOperational)
-        let nonOperationalProviders = providers.filter { !$0.isOperational }
-
-        Menu {
-            ForEach(operationalProviders) { provider in
-                ServiceMenu(provider: provider)
-            }
-        } label: {
-            if operationalProviders.isEmpty {
-                Text("\(operationalProviders.count) servizi ok")
+        TimelineView(.periodic(from: period.startedAt, by: 60)) { context in
+            let seconds = context.date.timeIntervalSince(period.startedAt)
+            if seconds < 60 {
+                period.isOperational ? Text("Up for less than a minute") : Text("Down for less than a minute")
             } else {
-                Text("🟢 \(operationalProviders.count) servizi ok")
+                let time = Duration.seconds(seconds).formatted(
+                    .units(allowed: [.days, .hours, .minutes], width: .abbreviated, maximumUnitCount: 2,
+                           fractionalPart: .hide(rounded: .towardZero)).locale(locale)
+                )
+                period.isOperational ? Text("Up for \(time)") : Text("Down for \(time)")
             }
         }
-        .disabled(operationalProviders.isEmpty)
-
-        if !nonOperationalProviders.isEmpty {
-            Divider()
-        }
-
-        ForEach(nonOperationalProviders) { provider in
-            ServiceMenu(provider: provider)
-        }
-
-        if providers.isEmpty {
-            Text("No services enabled")
-        }
-
-        Divider()
-
-        Button {
-            Task { await monitor.refreshAllManually() }
-        } label: {
-            if monitor.isRefreshingAll {
-                Text("Refreshing all…")
-            } else {
-                Text("Refresh all")
-            }
-        }
-        .disabled(providers.isEmpty || monitor.isRefreshingAll)
-
-        if updates.automaticChecks, let version = updates.availableVersion, let url = updates.availableReleaseURL {
-            Link("Version \(version) is available", destination: url)
-        }
-        Button("Settings", action: openSettings)
-
-        Button("Quit Status Page Monitor") {
-            NSApplication.shared.terminate(nil)
-        }
-        .keyboardShortcut("q", modifiers: .command)
     }
+}
+
+/// AppKit tracks the cascading menus. Only the read-only rows use hosted views.
+@MainActor
+private final class StatusMenuController: NSObject, NSMenuDelegate {
+    private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    private let root = NSMenu()
+    private let openSettings: () -> Void
+    private let monitor = MonitoringModel.shared
+    private let language = LocalizationManager.shared
+    private var observations: Set<AnyCancellable> = []
+
+    init(openSettings: @escaping () -> Void) {
+        self.openSettings = openSettings
+        super.init()
+        root.autoenablesItems = false
+        root.delegate = self
+        item.menu = root
+        item.button?.image = NSImage(systemSymbolName: AppIdentity.symbolName, accessibilityDescription: nil)
+        item.button?.imagePosition = .imageLeading
+        Publishers.Merge(monitor.objectWillChange, language.objectWillChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.updateStatusButton() }
+            .store(in: &observations)
+        updateStatusButton()
+    }
+
+    func remove() { NSStatusBar.system.removeStatusItem(item) }
+
+    private func string(_ value: String.LocalizationValue) -> String {
+        String(localized: LocalizedStringResource(value, locale: language.locale))
+    }
+
+    private func updateStatusButton() {
+        let count = monitor.nonOKServiceCount
+        item.button?.attributedTitle = NSAttributedString(string: count > 0 ? " \(count)" : "",
+            attributes: [.foregroundColor: NSColor.systemRed, .font: NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)])
+        item.button?.setAccessibilityLabel(count > 0 ? string("Status Page Monitor: \(count) services not OK") : AppIdentity.displayName)
+    }
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.removeAllItems()
+        if let submenu = menu as? ProviderSubmenu {
+            if let provider = monitor.statusMenuServices.first(where: { $0.id == submenu.providerID }) {
+                populate(submenu, for: provider)
+            }
+            return
+        }
+        let providers = monitor.statusMenuServices
+        let healthy = providers.filter(\.isOperational)
+        let others = providers.filter { !$0.isOperational }
+        let group = menu.addItem(withTitle: string(healthy.isEmpty ? "\(healthy.count) servizi ok" : "🟢 \(healthy.count) servizi ok"),
+                                 action: nil, keyEquivalent: "")
+        group.isEnabled = !healthy.isEmpty
+        if !healthy.isEmpty {
+            let list = NSMenu()
+            list.autoenablesItems = false
+            for provider in healthy { addProvider(provider, to: list) }
+            group.submenu = list
+        }
+        if !others.isEmpty { menu.addItem(.separator()) }
+        for provider in others { addProvider(provider, to: menu) }
+        if providers.isEmpty {
+            menu.addItem(withTitle: string("No services enabled"), action: nil, keyEquivalent: "").isEnabled = false
+        }
+        menu.addItem(.separator())
+        let refresh = MenuCommand(string(monitor.isRefreshingAll ? "Refreshing all…" : "Refresh all")) {
+            Task { await MonitoringModel.shared.refreshAllManually() }
+        }
+        refresh.isEnabled = !providers.isEmpty && !monitor.isRefreshingAll
+        menu.addItem(refresh)
+        let updates = UpdateSettingsModel.shared
+        if updates.automaticChecks, let version = updates.availableVersion, let url = updates.availableReleaseURL {
+            menu.addItem(MenuCommand(string("Version \(version) is available")) { NSWorkspace.shared.open(url) })
+        }
+        menu.addItem(MenuCommand(string("Settings"), perform: openSettings))
+        menu.addItem(MenuCommand(string("Quit Status Page Monitor"), key: "q") { NSApp.terminate(nil) })
+    }
+
+    private func addProvider(_ provider: StatusMenuService, to menu: NSMenu) {
+        let marker: String
+        var suffix: String?
+        switch provider.result {
+        case .observed(let observation):
+            marker = observation.isOperational ? "🟢 " : "🔴 "
+            if !observation.isOperational && observation.activeIncidents.isEmpty {
+                suffix = String(localized: conditionName(observation.condition, locale: language.locale))
+            }
+        case .failed:
+            marker = "🟠 "
+            suffix = string("Check failed")
+        case nil:
+            marker = ""
+            suffix = string("Waiting")
+        }
+        if provider.isChecking && !provider.isOperational { suffix = string("Checking") }
+        let row = menu.addItem(withTitle: marker + provider.name + (suffix.map { " · " + $0 } ?? ""),
+                               action: nil, keyEquivalent: "")
+        if case .observed(let observation) = provider.result, !observation.isOperational, suffix == nil {
+            row.setAccessibilityLabel(provider.name + " · " + string("Active issue"))
+        }
+        let submenu = ProviderSubmenu(providerID: provider.id, title: provider.name)
+        submenu.autoenablesItems = false
+        submenu.delegate = self
+        row.submenu = submenu
+    }
+
+    private func populate(_ menu: NSMenu, for provider: StatusMenuService) {
+        if let result = provider.result {
+            addProviderDetails(result, for: provider, to: menu)
+        }
+        if let period = provider.timing {
+            addInformation(HealthDurationLabel(period: period)
+                .font(.callout)
+                .foregroundStyle(.secondary), to: menu)
+        }
+        if let updated = provider.lastUpdatedAt {
+            let style = Date.FormatStyle(date: .abbreviated,
+                                         time: .shortened, locale: language.locale)
+            addInformation(Text("Last checked \(updated.formatted(style))")
+                .font(.callout)
+                .foregroundStyle(.secondary), to: menu)
+            menu.addItem(.separator())
+        }
+        let refresh = MenuCommand(string("Refresh now"), symbol: "arrow.clockwise") {
+            Task { await MonitoringModel.shared.refreshManually(provider.id) }
+        }
+        refresh.isEnabled = !provider.isChecking
+        menu.addItem(refresh)
+        menu.addItem(MenuCommand(string("Open status page"), symbol: "arrow.up.right.square") {
+            NSWorkspace.shared.open(provider.statusPageURL)
+        })
+    }
+
+    private func addProviderDetails(_ result: ProviderCheckResult, for provider: StatusMenuService, to menu: NSMenu) {
+        let symbol: String
+        let color: Color
+        let status: LocalizedStringKey
+        switch result {
+        case .failed:
+            (symbol, color, status) = ("exclamationmark.triangle.fill", .orange, "Check failed")
+        case .observed(let observation) where observation.isOperational:
+            (symbol, color, status) = ("circle.fill", .green, "Operational")
+        case .observed:
+            (symbol, color, status) = ("circle.fill", .red, "Active issue")
+        }
+        addInformation(HStack(spacing: 6) {
+            Image(systemName: symbol)
+                .foregroundStyle(color)
+                .font(.caption)
+                .accessibilityLabel(Text(status))
+            Text(verbatim: provider.name).font(.headline)
+        }.padding(.top, 3), to: menu)
+
+        switch result {
+        case .observed(let observation):
+            guard !observation.isOperational else { return }
+            if observation.activeIncidents.isEmpty {
+                addInformation(Text(conditionName(observation.condition, locale: language.locale)), to: menu)
+                addInformation(Text("No active incidents."), to: menu)
+            }
+            for incident in observation.activeIncidents {
+                addInformation(Text(verbatim: incident.title).fontWeight(.medium), to: menu)
+            }
+        case .failed(let failure):
+            addInformation(Text(failureDescription(failure.reason)), to: menu)
+        }
+    }
+
+    private func addInformation(_ content: some View, to menu: NSMenu) {
+        let host = NSHostingView(rootView: content
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 15).padding(.vertical, 3)
+            .frame(width: 310).fixedSize(horizontal: false, vertical: true)
+            .environment(\.locale, language.locale))
+        host.frame.size = host.fittingSize
+        let row = NSMenuItem()
+        row.view = host
+        menu.addItem(row)
+    }
+}
+
+private final class MenuCommand: NSMenuItem {
+    private let perform: () -> Void
+
+    init(_ title: String, symbol: String? = nil, key: String = "", perform: @escaping () -> Void) {
+        self.perform = perform
+        super.init(title: title, action: #selector(invoke), keyEquivalent: key)
+        target = self
+        if let symbol { image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil) }
+    }
+
+    required init(coder: NSCoder) { fatalError("MenuCommand is created programmatically") }
+    @objc private func invoke() { perform() }
+}
+
+private final class ProviderSubmenu: NSMenu {
+    let providerID: ServiceID
+
+    init(providerID: ServiceID, title: String) {
+        self.providerID = providerID
+        super.init(title: title)
+    }
+
+    required init(coder: NSCoder) { fatalError("ProviderSubmenu is created programmatically") }
 }
 
 private struct DashboardView: View {
@@ -1162,7 +1355,7 @@ private struct StatusMenuService: Identifiable {
     let isEnabled: Bool
     let isChecking: Bool
     let result: ProviderCheckResult?
-    let lastOperationalAt: Date?
+    let timing: ServiceHealthPeriod?
     let refresh: @MainActor () async -> ProviderCheckResult?
 
     var isOperational: Bool {
@@ -1175,83 +1368,6 @@ private struct StatusMenuService: Identifiable {
         case .observed(let observation): observation.observedAt
         case .failed(let failure): failure.attemptedAt
         case nil: nil
-        }
-    }
-}
-
-private struct ServiceMenu: View {
-    @EnvironmentObject private var monitor: MonitoringModel
-    @Environment(\.openURL) private var openURL
-    @Environment(\.locale) private var locale
-    let provider: StatusMenuService
-
-    var body: some View {
-        Menu {
-            Button("Refresh \(provider.name)") {
-                Task { await monitor.refreshManually(provider.id) }
-            }
-            .disabled(provider.isChecking)
-
-            Button("Open \(provider.name) status page") {
-                openURL(provider.statusPageURL)
-            }
-
-            if provider.lastUpdatedAt != nil || provider.lastOperationalAt != nil {
-                Divider()
-                if let updated = provider.lastUpdatedAt {
-                    Text("Last updated \(updated.formatted(timestampStyle))")
-                }
-                if let healthy = provider.lastOperationalAt {
-                    Text("Last OK \(healthy.formatted(timestampStyle))")
-                } else {
-                    Text("Last OK not recorded")
-                }
-            }
-
-            if !provider.isOperational, let result = provider.result {
-                Divider()
-                switch result {
-                case .observed(let observation):
-                    if observation.activeIncidents.isEmpty {
-                        Text("No active incidents.")
-                    }
-                    ForEach(observation.activeIncidents.indices, id: \.self) { index in
-                        Text(verbatim: observation.activeIncidents[index].title)
-                    }
-                case .failed(let failure):
-                    Text(failureDescription(failure.reason))
-                }
-            }
-        } label: {
-            if provider.isOperational {
-                Text(verbatim: "\(statusMarker)\(provider.name)")
-            } else {
-                Text("\(statusMarker)\(provider.name) · \(Text(statusLabel))")
-            }
-        }
-    }
-
-    private var timestampStyle: Date.FormatStyle {
-        .dateTime.year().month(.abbreviated).day().hour().minute().locale(locale)
-    }
-
-    private var statusLabel: LocalizedStringKey {
-        if provider.isChecking { return "Checking" }
-        switch provider.result {
-        case .observed(let observation):
-            if !observation.activeIncidents.isEmpty { return "Active issue" }
-            return conditionLabel(observation.condition)
-        case .failed: return "Check failed"
-        case nil: return "Waiting"
-        }
-    }
-
-    // Native menu titles display these dots in color alongside the status text.
-    private var statusMarker: String {
-        switch provider.result {
-        case .observed(let observation): observation.isOperational ? "🟢 " : "🔴 "
-        case .failed: "🟠 "
-        case nil: ""
         }
     }
 }
@@ -1299,13 +1415,13 @@ private struct ProviderConfigurationRow: View {
     }
 }
 
-private func conditionLabel(_ condition: ServiceCondition) -> LocalizedStringKey {
+private func conditionName(_ condition: ServiceCondition, locale: Locale) -> LocalizedStringResource {
     switch condition {
-    case .operational: "Operational"
-    case .degradedPerformance: "Degraded performance"
-    case .partialOutage: "Partial outage"
-    case .majorOutage: "Major outage"
-    case .maintenance: "Maintenance"
+    case .operational: LocalizedStringResource("Operational", locale: locale)
+    case .degradedPerformance: LocalizedStringResource("Degraded performance", locale: locale)
+    case .partialOutage: LocalizedStringResource("Partial outage", locale: locale)
+    case .majorOutage: LocalizedStringResource("Major outage", locale: locale)
+    case .maintenance: LocalizedStringResource("Maintenance", locale: locale)
     }
 }
 

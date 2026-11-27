@@ -53,8 +53,21 @@
 "Review the draft on GitHub and publish it with your account." = "Review the draft on GitHub and publish it with your account.";
 
 /* Provider rows */
+"Refresh now" = "Refresh now";
+"Open status page" = "Open status page";
+"Last checked %@" = "Last checked %@";
+"Down since" = "Down since";
+"First check" = "First check";
+"Last OK" = "Last OK";
+"Checks failing since" = "Checks failing since";
 "Last OK %@" = "Last OK %@";
-"Last OK not recorded" = "Last OK not recorded";
+"Down since %@" = "Down since %@";
+"First check %@" = "First check %@";
+"Checks failing since %@" = "Checks failing since %@";
+"Up for %@" = "Up for %@";
+"Up for less than a minute" = "Up for less than a minute";
+"Down for %@" = "Down for %@";
+"Down for less than a minute" = "Down for less than a minute";
 "Last updated %@" = "Last updated %@";
 "Refresh %@" = "Refresh %@";
 "Open %@ status page" = "Open %@ status page";
@@ -93,6 +106,12 @@
 "Waiting for first check." = "Waiting for first check.";
 
 /* Manual refresh feedback */
+"Services with ongoing issues" = "Services with ongoing issues";
+"Services with failed checks" = "Services with failed checks";
+"Services with issues or failed checks" = "Services with issues or failed checks";
+"Check failing for less than a minute" = "Check failing for less than a minute";
+"Check failing for %@" = "Check failing for %@";
+"Scroll for more details" = "Scroll for more details";
 "Refresh all" = "Refresh all";
 "Refreshing all…" = "Refreshing all…";
 "Operational: %lld · With issues: %lld · Failed checks: %lld" = "Operational: %1$lld · With issues: %2$lld · Failed checks: %3$lld";
@@ -105,9 +124,12 @@
 "OK" = "OK";
 /* Service notifications */
 "Service notifications" = "Service notifications";
-"Allow notifications to receive alerts about incidents and service recovery." = "Allow notifications to receive alerts about incidents and service recovery.";
+"Notify me about incidents and recoveries" = "Notify me about incidents and recoveries";
+"Waiting for macOS notification permission…" = "Waiting for macOS notification permission…";
+"macOS could not enable notifications." = "macOS could not enable notifications.";
+"macOS has not confirmed notification permission." = "macOS has not confirmed notification permission.";
+"Open notification settings" = "Open notification settings";
 "Enable notifications" = "Enable notifications";
-"Notifications are enabled." = "Notifications are enabled.";
 "Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings." = "Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings.";
 "Notification permission status is unavailable." = "Notification permission status is unavailable.";
 "Service issue detected" = "Service issue detected";
@@ -119,6 +141,11 @@
 /* App updates */
 "Check now" = "Check now";
 "Updates" = "Updates";
+"Installed version" = "Installed version";
+"Last version found on GitHub" = "Last version found on GitHub";
+"Last update check" = "Last update check";
+"Never checked" = "Never checked";
+"Unavailable" = "Unavailable";
 "Check for updates automatically" = "Check for updates automatically";
 "Notify me when updates are available" = "Notify me when updates are available";
 "Install updates automatically" = "Install updates automatically";

@@ -54,8 +54,21 @@
 "Review the draft on GitHub and publish it with your account." = "Rivedi la bozza su GitHub e pubblicala con il tuo account.";
 
 /* Righe provider */
+"Refresh now" = "Aggiorna ora";
+"Open status page" = "Apri pagina di stato";
+"Last checked %@" = "Ultima verifica il %@";
+"Down since" = "KO da";
+"First check" = "Prima verifica";
+"Last OK" = "Ultimo OK";
+"Checks failing since" = "Controlli non riusciti da";
 "Last OK %@" = "Ultimo OK %@";
-"Last OK not recorded" = "Ultimo OK non registrato";
+"Down since %@" = "KO da %@";
+"First check %@" = "Prima verifica: %@";
+"Checks failing since %@" = "Controlli non riusciti da %@";
+"Up for %@" = "OK da %@";
+"Up for less than a minute" = "OK da meno di un minuto";
+"Down for %@" = "KO da %@";
+"Down for less than a minute" = "KO da meno di un minuto";
 "Last updated %@" = "Ultimo aggiornamento %@";
 "Refresh %@" = "Aggiorna %@";
 "Open %@ status page" = "Apri la pagina di stato di %@";
@@ -94,6 +107,12 @@
 "Waiting for first check." = "In attesa del primo controllo.";
 
 /* Manual refresh feedback */
+"Services with ongoing issues" = "Servizi con problemi in corso";
+"Services with failed checks" = "Servizi con controlli non riusciti";
+"Services with issues or failed checks" = "Servizi con problemi o controlli non riusciti";
+"Check failing for less than a minute" = "Controllo non riuscito da meno di un minuto";
+"Check failing for %@" = "Controllo non riuscito da %@";
+"Scroll for more details" = "Scorri per leggere gli altri dettagli";
 "Refresh all" = "Aggiorna tutti";
 "Refreshing all…" = "Aggiornamento in corso…";
 "Operational: %lld · With issues: %lld · Failed checks: %lld" = "Operativi: %1$lld · Con problemi: %2$lld · Controlli falliti: %3$lld";
@@ -106,9 +125,12 @@
 "OK" = "OK";
 /* Notifiche dei servizi */
 "Service notifications" = "Notifiche dei servizi";
-"Allow notifications to receive alerts about incidents and service recovery." = "Consenti le notifiche per ricevere avvisi sugli incidenti e sul ripristino dei servizi.";
+"Notify me about incidents and recoveries" = "Avvisami in caso di incidente o ripristino";
+"Waiting for macOS notification permission…" = "In attesa del permesso di macOS per le notifiche…";
+"macOS could not enable notifications." = "macOS non è riuscito ad abilitare le notifiche.";
+"macOS has not confirmed notification permission." = "macOS non ha confermato il permesso per le notifiche.";
+"Open notification settings" = "Apri le impostazioni delle notifiche";
 "Enable notifications" = "Abilita notifiche";
-"Notifications are enabled." = "Le notifiche sono attive.";
 "Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings." = "Le notifiche sono disattivate. Per ricevere avvisi, abilita le notifiche di Status Page Monitor in Impostazioni di Sistema.";
 "Notification permission status is unavailable." = "Lo stato dei permessi per le notifiche non è disponibile.";
 "Service issue detected" = "Problema del servizio rilevato";
@@ -120,6 +142,11 @@
 /* App updates */
 "Check now" = "Verifica ora";
 "Updates" = "Aggiornamenti";
+"Installed version" = "Versione installata";
+"Last version found on GitHub" = "Ultima versione rilevata su GitHub";
+"Last update check" = "Ultima verifica";
+"Never checked" = "Mai eseguita";
+"Unavailable" = "Non disponibile";
 "Check for updates automatically" = "Cerca nuovi aggiornamenti automaticamente";
 "Notify me when updates are available" = "Notifica nuovi aggiornamenti disponibili";
 "Install updates automatically" = "Installa automaticamente gli aggiornamenti";
