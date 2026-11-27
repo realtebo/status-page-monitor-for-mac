@@ -1,25 +1,11 @@
 import Foundation
 
 struct CloudflareStatusProvider: StatusProvider {
-    private static let summaryURL = URL(string: "https://www.cloudflarestatus.com/api/v2/summary.json")!
-    private static let terminalStatuses: Set<String> = ["resolved", "postmortem", "completed"]
-    private static let conditions: [String: ServiceCondition] = [
-        "none": .operational,
-        "maintenance": .maintenance,
-        "minor": .degradedPerformance,
-        "major": .majorOutage,
-        "critical": .majorOutage
-    ]
+    private static let incidentsURL = URL(string: "https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json")!
     private static let incidentStatuses: [String: IncidentStatus] = [
         "investigating": .investigating,
         "identified": .identified,
-        "monitoring": .monitoring,
-        "scheduled": .scheduled,
-        "in_progress": .inProgress,
-        "verifying": .verifying
-    ]
-    private static let allowedComponentStatuses: Set<String> = [
-        "operational", "partial_outage", "under_maintenance"
+        "monitoring": .monitoring
     ]
 
     private let transport: any HTTPTransport
@@ -31,37 +17,23 @@ struct CloudflareStatusProvider: StatusProvider {
 
     func check(at date: Date) async -> ProviderCheckResult {
         do {
-            let response = try await transport.get(Self.summaryURL)
+            let response = try await transport.get(Self.incidentsURL)
             let document = try JSONResponseParser.parse(response.body)
             guard case .object(let root) = document else { throw CloudflareProviderFailure.invalidRoot }
 
-            let status = try object("status", in: root, path: "/status")
-            let indicator = try requiredString("indicator", in: status, path: "/status/indicator")
-            guard let pageCondition = Self.conditions[indicator] else {
-                throw CloudflareProviderFailure.unknownValue(path: "/status/indicator", value: indicator)
-            }
-
-            let incidents = try activeRecords("incidents", in: root, maintenance: false)
-            let maintenances = try activeRecords("scheduled_maintenances", in: root, maintenance: true)
-            let componentIssues = try degradedComponents(in: root)
-            let hasOutage = !incidents.isEmpty
-            let hasMaintenance = !maintenances.isEmpty
-
+            let incidents = try activeIncidents(in: root)
             let condition: ServiceCondition
-            if hasMaintenance && !hasOutage {
-                condition = .maintenance
-            } else if hasOutage && pageCondition == .operational {
-                condition = .partialOutage
-            } else if !componentIssues.isEmpty && pageCondition == .operational {
+            if incidents.contains(where: { $0.impact == .major || $0.impact == .critical }) {
+                condition = .majorOutage
+            } else if incidents.contains(where: { $0.impact == .minor }) {
                 condition = .degradedPerformance
             } else {
-                condition = pageCondition
+                condition = .operational
             }
-
             return .observed(
                 ServiceObservation(
                     condition: condition,
-                    activeIncidents: incidents + maintenances + componentIssues,
+                    activeIncidents: incidents,
                     observedAt: date
                 )
             )
@@ -72,61 +44,27 @@ struct CloudflareStatusProvider: StatusProvider {
         }
     }
 
-    private func activeRecords(
-        _ key: String,
-        in root: [String: JSONValue],
-        maintenance: Bool
-    ) throws -> [ServiceIncident] {
-        let values = try array(key, in: root, path: "/\(key)")
-        return try values.enumerated().compactMap { index, value -> ServiceIncident? in
-            guard case .object(let fields) = value else {
-                throw CloudflareProviderFailure.invalidField("/\(key)/\(index)")
-            }
-            let path = "/\(key)/\(index)"
+    private func activeIncidents(in root: [String: JSONValue]) throws -> [ServiceIncident] {
+        let values = try array("incidents", in: root, path: "/incidents")
+        return try values.enumerated().compactMap { index, value in
+            let path = "/incidents/\(index)"
+            guard case .object(let fields) = value else { throw CloudflareProviderFailure.invalidField(path) }
             let lifecycle = try requiredString("status", in: fields, path: "\(path)/status")
-            if Self.terminalStatuses.contains(lifecycle) { return nil }
+            if ["resolved", "postmortem", "scheduled", "in_progress", "verifying", "completed"].contains(lifecycle) { return nil }
             guard let incidentStatus = Self.incidentStatuses[lifecycle] else {
                 throw CloudflareProviderFailure.unknownValue(path: "\(path)/status", value: lifecycle)
             }
             let title = try requiredString("name", in: fields, path: "\(path)/name")
             let sourceImpact = try requiredString("impact", in: fields, path: "\(path)/impact")
             let impact = try mappedImpact(sourceImpact, path: "\(path)/impact")
-            let mappedImpact: IncidentImpact = maintenance ? .maintenance : impact
+            guard impact != .maintenance else { return nil }
 
             return ServiceIncident(
                 id: fields["id"]?.stringValue,
                 title: title,
                 status: incidentStatus,
-                impact: mappedImpact,
+                impact: impact,
                 summary: firstIncidentUpdateBody(fields["incident_updates"]),
-                url: nil,
-                startedAt: nil,
-                updatedAt: nil
-            )
-        }
-    }
-
-    private func degradedComponents(in root: [String: JSONValue]) throws -> [ServiceIncident] {
-        let values = try array("components", in: root, path: "/components")
-        return try values.enumerated().compactMap { index, value -> ServiceIncident? in
-            guard case .object(let fields) = value else {
-                throw CloudflareProviderFailure.invalidField("/components/\(index)")
-            }
-            let path = "/components/\(index)"
-            let name = try requiredString("name", in: fields, path: "\(path)/name")
-            let sourceStatus = try requiredString("status", in: fields, path: "\(path)/status")
-            let isSpecialServicesGroup = name == "Cloudflare Sites and Services"
-            if Self.allowedComponentStatuses.contains(sourceStatus),
-               !(sourceStatus == "under_maintenance" && isSpecialServicesGroup) {
-                return nil
-            }
-
-            return ServiceIncident(
-                id: fields["id"]?.stringValue,
-                title: "\(name): \(sourceStatus.replacingOccurrences(of: "_", with: " "))",
-                status: nil,
-                impact: componentImpact(sourceStatus),
-                summary: nil,
                 url: nil,
                 startedAt: nil,
                 updatedAt: nil
@@ -150,26 +88,6 @@ struct CloudflareStatusProvider: StatusProvider {
         case "maintenance": .maintenance
         default: throw CloudflareProviderFailure.unknownValue(path: path, value: value)
         }
-    }
-
-    private func componentImpact(_ value: String) -> IncidentImpact? {
-        switch value {
-        case "degraded_performance": .minor
-        case "partial_outage": .major
-        case "major_outage": .critical
-        case "under_maintenance": .maintenance
-        default: nil
-        }
-    }
-
-    private func object(
-        _ key: String,
-        in fields: [String: JSONValue],
-        path: String
-    ) throws -> [String: JSONValue] {
-        guard let value = fields[key] else { throw CloudflareProviderFailure.missingField(path) }
-        guard case .object(let object) = value else { throw CloudflareProviderFailure.invalidField(path) }
-        return object
     }
 
     private func array(_ key: String, in fields: [String: JSONValue], path: String) throws -> [JSONValue] {
@@ -199,9 +117,9 @@ private enum CloudflareProviderFailure: Error, LocalizedError, ProviderFailure, 
 
     var errorDescription: String? {
         switch self {
-        case .invalidRoot: "Cloudflare summary must be a JSON object."
-        case .missingField(let path): "Cloudflare summary is missing '\(path)'."
-        case .invalidField(let path): "Cloudflare summary field '\(path)' has an invalid type or value."
+        case .invalidRoot: "Cloudflare incidents response must be a JSON object."
+        case .missingField(let path): "Cloudflare incidents response is missing '\(path)'."
+        case .invalidField(let path): "Cloudflare incidents response field '\(path)' has an invalid type or value."
         case .unknownValue(let path, let value): "Cloudflare value '\(value)' at '\(path)' is not mapped."
         }
     }

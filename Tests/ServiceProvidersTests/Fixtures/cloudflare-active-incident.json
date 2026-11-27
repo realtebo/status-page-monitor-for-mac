@@ -1,1 +1,54 @@
-{"status":{"indicator":"none","description":"All Systems Operational"},"components":[{"id":"cmp-1","name":"Network","status":"operational"}],"incidents":[{"id":"inc-1","name":"Dashboard access is degraded","status":"investigating","impact":"major","incident_updates":[{"body":"We are investigating dashboard access issues."}]}],"scheduled_maintenances":[]}
+{
+  "incidents": [
+    {
+      "id": "inc-1",
+      "name": "Workers event subscriptions",
+      "status": "identified",
+      "impact": "minor",
+      "incident_updates": [
+        {
+          "body": "A fix is being implemented."
+        }
+      ],
+      "components": [
+        {
+          "name": "Queues",
+          "status": "degraded_performance"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard access",
+      "status": "investigating",
+      "impact": "major"
+    },
+    {
+      "name": "API latency",
+      "status": "monitoring",
+      "impact": "none"
+    },
+    {
+      "name": "Closed incident",
+      "status": "resolved",
+      "impact": "major"
+    },
+    {
+      "name": "Historical incident",
+      "status": "postmortem",
+      "impact": "minor"
+    }
+  ],
+  "scheduled_maintenances": [
+    {
+      "name": "Miami maintenance",
+      "status": "scheduled",
+      "impact": "maintenance"
+    }
+  ],
+  "components": [
+    {
+      "name": "Workers",
+      "status": "degraded_performance"
+    }
+  ]
+}

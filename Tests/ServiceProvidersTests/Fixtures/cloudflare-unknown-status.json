@@ -1,1 +1,9 @@
-{"status":{"indicator":"investigating","description":"Unknown"},"components":[{"id":"cmp-1","name":"Network","status":"operational"}],"incidents":[],"scheduled_maintenances":[]}
+{
+  "incidents": [
+    {
+      "name": "Unknown state",
+      "status": "unexpected",
+      "impact": "minor"
+    }
+  ]
+}
