@@ -116,3 +116,23 @@
 "%1$@ has an active issue." = "%1$@ ha un problema attivo.";
 "%1$@ has an active issue: %2$@" = "%1$@ ha un problema attivo: %2$@";
 "%1$@ is operational again. Recovered at %2$@." = "%1$@ è tornato operativo. Ripristino alle %2$@.";
+
+/* App updates */
+"Updates" = "Aggiornamenti";
+"Check for updates automatically" = "Cerca nuovi aggiornamenti automaticamente";
+"Notify me when updates are available" = "Notifica nuovi aggiornamenti disponibili";
+"Install updates automatically" = "Installa automaticamente gli aggiornamenti";
+"Automatic checks run when the app starts and once per hour while enabled." = "Il controllo viene eseguito all’avvio e poi ogni ora mentre l’app è aperta.";
+"Automatic installation is not available in this build." = "Questa build non è configurata per installare gli aggiornamenti firmati.";
+"Checking for updates…" = "Ricerca degli aggiornamenti…";
+"Version %@ is available" = "È disponibile la versione %@";
+"View release notes" = "Vedi le note di rilascio";
+"This release cannot be installed automatically." = "Questa versione richiede l’installazione manuale.";
+"Update ready. It will be installed when you quit the app." = "Aggiornamento pronto. Verrà installato alla chiusura dell’app.";
+"Automatic installation failed: %@" = "Installazione automatica non riuscita: %@";
+"Could not check for updates: %@" = "Controllo degli aggiornamenti non riuscito: %@";
+"No updates available." = "L’app è aggiornata.";
+"Update available" = "Aggiornamento disponibile";
+"Status Page Monitor version %@ is available." = "È disponibile la versione %@ di Status Page Monitor.";
+"The installed app version is invalid." = "La versione installata dell’app non è valida.";
+"The published updates require Apple silicon." = "Gli aggiornamenti pubblicati richiedono un Mac con chip Apple.";

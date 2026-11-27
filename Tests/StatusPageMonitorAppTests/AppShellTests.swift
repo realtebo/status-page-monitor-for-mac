@@ -174,3 +174,72 @@ private func confirmedUnreachableResult(
         #expect(NSApp.activationPolicy() == .accessory)
     }
 }
+
+@Test func releaseCheckFindsNewestPublicMacVersionIncludingPreviews() async throws {
+    let base = "https://github.com/realtebo/status-page-monitor-for-mac/releases/download"
+    func release(_ tag: String, draft: Bool = false, signed: Bool = false) -> [String: Any] {
+        let assets = (signed ? [GitHubReleaseCheck.archiveAssetName, "appcast.xml"] : [GitHubReleaseCheck.archiveAssetName])
+            .map { ["name": $0, "browser_download_url": "\(base)/\(tag)/\($0)"] }
+        return ["tag_name": tag, "draft": draft, "prerelease": true, "assets": assets]
+    }
+    let records = [release("v0.02"), release("v2.0", draft: true), release("v0.10.1", signed: true), release("nightly")]
+    let body = try JSONSerialization.data(withJSONObject: records)
+    let found = try await GitHubReleaseCheck(transport: ReleaseTestTransport(body: body)).latestMacRelease()
+    #expect(found.tagName == "v0.10.1")
+    #expect(found.appcastURL?.absoluteString == "\(base)/v0.10.1/appcast.xml")
+    #expect(GitHubReleaseVersion(tagName: "v0.02") == GitHubReleaseVersion(cfBundleShortVersionString: "0.2.0"))
+    #expect(GitHubReleaseVersion(tagName: "v1.0-beta") == nil)
+}
+
+private struct ReleaseTestTransport: HTTPTransport {
+    let body: Data
+
+    func get(_ url: URL) async throws -> HTTPResponse {
+        #expect(url.host == "api.github.com")
+        #expect(url.path == "/repos/realtebo/status-page-monitor-for-mac/releases")
+        return HTTPResponse(statusCode: 200, finalURL: url, mimeType: "application/json", body: body)
+    }
+}
+
+@MainActor
+@Test func updatePreferencesCheckAtLaunchAndAfterOneHour() async throws {
+    let suite = "UpdateSettingsTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let probe = UpdateClockProbe()
+    let release = UpdateRelease(version: "0.03", releaseURL: AppIdentity.repositoryURL, appcastURL: nil)
+    let model = UpdateSettingsModel(defaults: defaults, waitForNextCheck: { duration in
+        try await probe.wait(duration)
+    }, releaseChecker: {
+        await probe.checked()
+        return release
+    })
+    #expect(model.automaticChecks)
+    #expect(!model.notifyWhenUpdatesAreAvailable)
+    #expect(!model.automaticInstallation)
+    model.startAtLaunch()
+    model.startAtLaunch()
+    for _ in 0..<100 where await probe.checks < 2 { try await Task.sleep(for: .milliseconds(5)) }
+    #expect(await probe.checks == 2)
+    #expect(await probe.intervals == [.seconds(3600), .seconds(3600)])
+    #expect(model.availableRelease == release)
+    model.automaticChecks = false
+    let reopened = UpdateSettingsModel(defaults: defaults, releaseChecker: {
+        Issue.record("The disabled release check ran at launch")
+        return nil
+    })
+    reopened.startAtLaunch()
+    #expect(!reopened.automaticChecks)
+}
+
+private actor UpdateClockProbe {
+    private(set) var checks = 0
+    private(set) var intervals: [Duration] = []
+
+    func checked() { checks += 1 }
+
+    func wait(_ interval: Duration) throws {
+        intervals.append(interval)
+        if intervals.count == 2 { throw CancellationError() }
+    }
+}

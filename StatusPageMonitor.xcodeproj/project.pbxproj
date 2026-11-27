@@ -24,6 +24,7 @@
 			productRefGroup = 87EAB99AD8D143169C8D558D /* Products */;
 			packageReferences = (
 				F001A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
+				F003A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -44,6 +45,7 @@
 			dependencies = ();
 			packageProductDependencies = (
 				F002A0D180354684A8BA6A11 /* SwiftSoup */,
+				F004A0D180354684A8BA6A11 /* Sparkle */,
 			);
 			name = StatusPageMonitor;
 			productName = StatusPageMonitor;
@@ -73,6 +75,9 @@
 				DEC2C9ED38BE4F7F9A3A5197 /* StatusPageMonitorApp.swift */,
 				C501A0D180354684A8BA6A11 /* LocalizationManager.swift */,
 				97E4A5E595BB4FDDB60BB6F4 /* IssueReportView.swift */,
+				0E2B6740D8DC4E2D8B39C383 /* OfficialUpdater.swift */,
+				0E204DAA439A4E19ACD74318 /* GitHubReleaseCheck.swift */,
+				6323ACB07E3F4F7987541E91 /* UpdateSettings.swift */,
 				C062A0D180354684A8BA6A11 /* ServiceNotifications.swift */,
 				C061A0D180354684A8BA6A11 /* ConfirmedServiceHealth.swift */,
 				F2147DD99F4B4D54BE265651 /* AppShellTests.swift */,
@@ -320,6 +325,24 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = Sources/StatusPageMonitorApp/IssueReportView.swift;
+			sourceTree = "<group>";
+		};
+		0E2B6740D8DC4E2D8B39C383 /* OfficialUpdater.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Sources/StatusPageMonitorApp/OfficialUpdater.swift;
+			sourceTree = "<group>";
+		};
+		0E204DAA439A4E19ACD74318 /* GitHubReleaseCheck.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Sources/StatusPageMonitorApp/GitHubReleaseCheck.swift;
+			sourceTree = "<group>";
+		};
+		6323ACB07E3F4F7987541E91 /* UpdateSettings.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Sources/StatusPageMonitorApp/UpdateSettings.swift;
 			sourceTree = "<group>";
 		};
 		C062A0D180354684A8BA6A11 /* ServiceNotifications.swift */ = {
@@ -772,6 +795,18 @@
 			isa = PBXBuildFile;
 			fileRef = 97E4A5E595BB4FDDB60BB6F4 /* IssueReportView.swift */;
 		};
+		2ED7CC1779DD4DA697C53BCF /* OfficialUpdater.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 0E2B6740D8DC4E2D8B39C383 /* OfficialUpdater.swift */;
+		};
+		0F35CB536453426687639B0D /* GitHubReleaseCheck.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 0E204DAA439A4E19ACD74318 /* GitHubReleaseCheck.swift */;
+		};
+		2B23903F5A284E8C99B18A81 /* UpdateSettings.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 6323ACB07E3F4F7987541E91 /* UpdateSettings.swift */;
+		};
 		D062A0D180354684A8BA6A11 /* ServiceNotifications.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = C062A0D180354684A8BA6A11 /* ServiceNotifications.swift */;
@@ -961,6 +996,10 @@
 			isa = PBXBuildFile;
 			productRef = F002A0D180354684A8BA6A11 /* SwiftSoup */;
 		};
+		D302A0D180354684A8BA6A11 /* Sparkle in Frameworks */ = {
+			isa = PBXBuildFile;
+			productRef = F004A0D180354684A8BA6A11 /* Sparkle */;
+		};
 		2D6F90D7767E4495AF0ACC1E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -968,6 +1007,9 @@
 				0663D79D3D6E4E57BC743862 /* StatusPageMonitorApp.swift in Sources */,
 				D501A0D180354684A8BA6A11 /* LocalizationManager.swift in Sources */,
 				336B1A1E53EE4E14B8736007 /* IssueReportView.swift in Sources */,
+				2ED7CC1779DD4DA697C53BCF /* OfficialUpdater.swift in Sources */,
+				0F35CB536453426687639B0D /* GitHubReleaseCheck.swift in Sources */,
+				2B23903F5A284E8C99B18A81 /* UpdateSettings.swift in Sources */,
 				D062A0D180354684A8BA6A11 /* ServiceNotifications.swift in Sources */,
 				D061A0D180354684A8BA6A11 /* ConfirmedServiceHealth.swift in Sources */,
 				D101A0D180354684A8BA6A11 /* StatusProvider.swift in Sources */,
@@ -1001,7 +1043,7 @@
 		E3157B0ACB684C27854D9282 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
-			files = (D301A0D180354684A8BA6A11 /* SwiftSoup in Frameworks */,);
+			files = (D301A0D180354684A8BA6A11 /* SwiftSoup in Frameworks */, D302A0D180354684A8BA6A11 /* Sparkle in Frameworks */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9F91D8609F1745DB926B4A11 /* Resources */ = {
@@ -1153,10 +1195,23 @@
 				minimumVersion = 2.14.4;
 			};
 		};
+		F003A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.1;
+			};
+		};
 		F002A0D180354684A8BA6A11 /* SwiftSoup */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F001A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "SwiftSoup" */;
 			productName = SwiftSoup;
+		};
+		F004A0D180354684A8BA6A11 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F003A0D180354684A8BA6A11 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 		26465E6363AE43A38759F3C4 /* Build configuration list for PBXProject */ = {
 			isa = XCConfigurationList;
@@ -1205,6 +1260,8 @@
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
+				INFOPLIST_FILE = Resources/AppInfo.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				INFOPLIST_KEY_LSUIElement = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 0.02;
@@ -1222,6 +1279,8 @@
 				CODE_SIGNING_ALLOWED = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
+				INFOPLIST_FILE = Resources/AppInfo.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				INFOPLIST_KEY_LSUIElement = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 0.02;

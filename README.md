@@ -49,6 +49,8 @@ git tag -a v0.03
 git push origin refs/tags/v0.03
 ```
 
+Configure the Sparkle signing key before tagging the first update-enabled release. Users of v0.01 and v0.02 install that release manually. See [update signing and setup](Documentation/updates.md).
+
 Preview builds are unsigned by Developer ID and are not notarized.
 
 ## Project Structure

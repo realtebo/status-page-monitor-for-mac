@@ -115,3 +115,23 @@
 "%1$@ has an active issue." = "%1$@ has an active issue.";
 "%1$@ has an active issue: %2$@" = "%1$@ has an active issue: %2$@";
 "%1$@ is operational again. Recovered at %2$@." = "%1$@ is operational again. Recovered at %2$@.";
+
+/* App updates */
+"Updates" = "Updates";
+"Check for updates automatically" = "Check for updates automatically";
+"Notify me when updates are available" = "Notify me when updates are available";
+"Install updates automatically" = "Install updates automatically";
+"Automatic checks run when the app starts and once per hour while enabled." = "Automatic checks run when the app starts and once per hour while enabled.";
+"Automatic installation is not available in this build." = "Automatic installation is not available in this build.";
+"Checking for updates…" = "Checking for updates…";
+"Version %@ is available" = "Version %@ is available";
+"View release notes" = "View release notes";
+"This release cannot be installed automatically." = "This release cannot be installed automatically.";
+"Update ready. It will be installed when you quit the app." = "Update ready. It will be installed when you quit the app.";
+"Automatic installation failed: %@" = "Automatic installation failed: %@";
+"Could not check for updates: %@" = "Could not check for updates: %@";
+"No updates available." = "No updates available.";
+"Update available" = "Update available";
+"Status Page Monitor version %@ is available." = "Status Page Monitor version %@ is available.";
+"The installed app version is invalid." = "The installed app version is invalid.";
+"The published updates require Apple silicon." = "The published updates require Apple silicon.";

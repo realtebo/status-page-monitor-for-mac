@@ -36,6 +36,7 @@ final class AppLifecycleDelegate: NSObject, NSApplicationDelegate, NSWindowDeleg
     func applicationDidFinishLaunching(_ notification: Notification) {
         ServiceNotifications.shared.install()
         MonitoringModel.shared.startChecksAtLaunch()
+        UpdateSettingsModel.shared.startAtLaunch()
     }
 
     func openSettings() {
@@ -799,6 +800,7 @@ private struct StatusBarLabel: View {
 
 private struct StatusBarMenu: View {
     let openSettings: () -> Void
+    @ObservedObject private var updates = UpdateSettingsModel.shared
     @EnvironmentObject private var monitor: MonitoringModel
 
     var body: some View {
@@ -844,6 +846,9 @@ private struct StatusBarMenu: View {
         }
         .disabled(providers.isEmpty || monitor.isRefreshingAll)
 
+        if updates.automaticChecks, let version = updates.availableVersion, let url = updates.availableReleaseURL {
+            Link("Version \(version) is available", destination: url)
+        }
         Button("Settings", action: openSettings)
 
         Button("Quit Status Page Monitor") {
@@ -859,6 +864,7 @@ private struct DashboardView: View {
         case providers
         case schedule
         case newIssue
+        case updates
         case about
 
         var title: LocalizedStringKey {
@@ -867,6 +873,7 @@ private struct DashboardView: View {
             case .providers: "Online service providers"
             case .schedule: "Schedule"
             case .newIssue: "New issue"
+            case .updates: "Updates"
             case .about: "About"
             }
         }
@@ -877,6 +884,7 @@ private struct DashboardView: View {
             case .providers: "switch.2"
             case .schedule: "clock"
             case .newIssue: "square.and.pencil"
+            case .updates: "arrow.down.circle"
             case .about: "info.circle"
             }
         }
@@ -930,6 +938,8 @@ private struct DashboardView: View {
                 NotificationPermissionSection()
             case .newIssue:
                 IssueReportView(draft: $issueDraft, repositoryURL: AppIdentity.repositoryURL)
+            case .updates:
+                UpdatesSettingsView()
             case .about:
                 Section {
                     Text(verbatim: AppIdentity.displayName)

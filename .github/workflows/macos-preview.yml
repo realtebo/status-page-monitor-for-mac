@@ -6,7 +6,7 @@ on:
       - 'v[0-9]*'
 
 concurrency:
-  group: macos-preview-${{ github.ref }}
+  group: macos-release-${{ github.ref }}
   queue: max
 
 jobs:
@@ -19,6 +19,7 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
       APP_ARCHIVE: StatusPageMonitor-macOS-arm64.zip
+      SPARKLE_PUBLIC_KEY: ${{ vars.SPARKLE_PUBLIC_KEY }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,6 +52,15 @@ jobs:
           fi
           echo "RELEASE_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
 
+      - name: Require the Sparkle public key
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SPARKLE_PUBLIC_KEY:-}" ]]; then
+            echo "::error::The SPARKLE_PUBLIC_KEY Actions variable is required; refusing to build without SUPublicEDKey."
+            exit 1
+          fi
+
       - name: Compile and package
         shell: bash
         run: |
@@ -59,17 +69,56 @@ jobs:
           xcodebuild -project StatusPageMonitor.xcodeproj \
             -scheme StatusPageMonitor -configuration Release \
             -destination 'generic/platform=macOS' -derivedDataPath build \
-            -onlyUsePackageVersionsFromResolvedFile \
-            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO \
-            MARKETING_VERSION="$RELEASE_VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
+            -clonedSourcePackagesDirPath build/SourcePackages -onlyUsePackageVersionsFromResolvedFile \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual \
+            MARKETING_VERSION="$RELEASE_VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            SPARKLE_PUBLIC_ED_KEY="$SPARKLE_PUBLIC_KEY" build
 
           app="build/Build/Products/Release/StatusPageMonitor.app"
+          codesign --verify --deep --strict "$app"
           actual_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")"
           if [[ "$actual_version" != "$RELEASE_VERSION" ]]; then
             echo "::error::The app version does not match the release tag."
             exit 1
           fi
+          if ! actual_public_key=$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$app/Contents/Info.plist"); then
+            echo "::error::The built app is missing SUPublicEDKey; refusing to publish an unsigned update feed."
+            exit 1
+          fi
+          if [[ "$actual_public_key" != "$SPARKLE_PUBLIC_KEY" ]]; then
+            echo "::error::The built app SUPublicEDKey does not match the configured SPARKLE_PUBLIC_KEY."
+            exit 1
+          fi
           ditto -c -k --sequesterRsrc --keepParent "$app" "$APP_ARCHIVE"
+
+      - name: Generate the signed appcast with the tag notes
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SPARKLE_PRIVATE_KEY:-}" ]]; then
+            echo "::error::The SPARKLE_PRIVATE_KEY Actions secret is required; refusing to build an unsigned update."
+            exit 1
+          fi
+          archives="$RUNNER_TEMP/sparkle-archives"
+          mkdir -p "$archives"
+          cp "$APP_ARCHIVE" "$archives/$APP_ARCHIVE"
+          cp "$RUNNER_TEMP/release-notes.md" "$archives/${APP_ARCHIVE%.zip}.md"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" \
+            | "build/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast" \
+                --ed-key-file - \
+                --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/v$RELEASE_VERSION/" \
+                --embed-release-notes \
+                -o "$archives/appcast.xml" \
+                "$archives"
+          enclosure='//channel/item/enclosure'
+          test "$(xmllint --xpath "string($enclosure/@url)" "$archives/appcast.xml")" = \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/$APP_ARCHIVE"
+          test "$(xmllint --xpath "string($enclosure/@length)" "$archives/appcast.xml")" = "$(stat -f %z "$APP_ARCHIVE")"
+          test -n "$(xmllint --xpath "string($enclosure/@*[local-name()='edSignature'])" "$archives/appcast.xml")"
+          cp "$archives/appcast.xml" appcast.xml
 
       - name: Publish preview to GitHub Releases
         env:
@@ -77,16 +126,24 @@ jobs:
         run: |
           set -euo pipefail
           tag="v$RELEASE_VERSION"
-          if release="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,assets)"; then
+          if release="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,isPrerelease,assets)"; then
             if jq -e '.isDraft' <<< "$release" > /dev/null; then
-              gh release upload "$tag" "$APP_ARCHIVE" --repo "$GITHUB_REPOSITORY" --clobber
-              gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --notes-file "$RUNNER_TEMP/release-notes.md"
+              gh release upload "$tag" "$APP_ARCHIVE" appcast.xml \
+                --repo "$GITHUB_REPOSITORY" --clobber
+              gh release edit "$tag" --repo "$GITHUB_REPOSITORY" \
+                --draft=false --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
             else
-              jq -e --arg name "$APP_ARCHIVE" 'any(.assets[]; .name == $name and .size > 0)' <<< "$release" > /dev/null
+              jq -e --arg archive "$APP_ARCHIVE" \
+                'any(.assets[]; .name == $archive and .size > 0) and any(.assets[]; .name == "appcast.xml" and .size > 0)' \
+                <<< "$release" > /dev/null
             fi
           else
-            gh release create "$tag" "$APP_ARCHIVE" \
-              --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease \
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --draft --prerelease \
               --title "Status Page Monitor $RELEASE_VERSION preview" \
               --notes-file "$RUNNER_TEMP/release-notes.md"
+            gh release upload "$tag" "$APP_ARCHIVE" appcast.xml \
+              --repo "$GITHUB_REPOSITORY"
+            gh release edit "$tag" --repo "$GITHUB_REPOSITORY" \
+              --draft=false --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
           fi

@@ -21,15 +21,18 @@ struct GitHubReleaseVersion: Comparable, Equatable, Hashable, Sendable {
 
 /// Describes the latest compatible macOS release found on GitHub.
 struct GitHubMacRelease: Equatable, Sendable {
-    let version: GitHubReleaseVersion
     let tagName: String
+    let numericVersion: GitHubReleaseVersion
+    let releaseURL: URL
     let downloadURL: URL
     let appcastURL: URL?
 
-    /// Indicates whether the release has the signed appcast required for automatic installation.
-    var isAutomaticallyInstallable: Bool {
-        appcastURL != nil
+    /// The version string used by the app bundle, without the tag's `v` prefix.
+    var version: String {
+        String(tagName.dropFirst())
     }
+
+
 }
 
 /// Errors returned while checking the official GitHub release history.
@@ -61,8 +64,6 @@ enum GitHubReleaseCheckFailure: Error, Equatable, LocalizedError, Sendable {
 
 /// Finds the latest compatible macOS release from the official repository.
 struct GitHubReleaseCheck: Sendable {
-    static let repositoryOwner = "realtebo"
-    static let repositoryName = "status-page-monitor-for-mac"
     static let archiveAssetName = "StatusPageMonitor-macOS-arm64.zip"
     static let appcastAssetName = "appcast.xml"
 
@@ -70,6 +71,7 @@ struct GitHubReleaseCheck: Sendable {
     // release entries include asset metadata, so 100 entries can exceed 2 MiB.
     private static let pageSize = 30
     private static let releasesEndpoint = URL(string: "https://api.github.com/repos/realtebo/status-page-monitor-for-mac/releases")!
+    private static let releasePageBase = "https://github.com/realtebo/status-page-monitor-for-mac/releases/tag"
     private static let downloadBase = "https://github.com/realtebo/status-page-monitor-for-mac/releases/download"
 
     private let transport: any HTTPTransport
@@ -87,6 +89,7 @@ struct GitHubReleaseCheck: Sendable {
         var latest: GitHubMacRelease?
 
         while true {
+            try Task.checkCancellation()
             let response: HTTPResponse
             do {
                 response = try await transport.get(Self.releasesURL(page: page))
@@ -118,9 +121,8 @@ struct GitHubReleaseCheck: Sendable {
 
             for value in values {
                 guard let candidate = Self.candidate(from: value) else { continue }
-                if latest == nil || latest!.version < candidate.version {
-                    latest = candidate
-                }
+                if let latest, latest.numericVersion >= candidate.numericVersion { continue }
+                latest = candidate
             }
 
             guard values.count == Self.pageSize else { break }
@@ -131,11 +133,6 @@ struct GitHubReleaseCheck: Sendable {
             throw GitHubReleaseCheckFailure.noCompatibleRelease
         }
         return latest
-    }
-
-    /// Alias convenient for callers that model this operation as a check.
-    func check() async throws -> GitHubMacRelease {
-        try await latestMacRelease()
     }
 
     private static func releasesURL(page: Int) -> URL {
@@ -173,9 +170,11 @@ struct GitHubReleaseCheck: Sendable {
         }
 
         guard let archiveURL else { return nil }
+        guard let releaseURL = URL(string: "\(releasePageBase)/\(tagName)") else { return nil }
         return GitHubMacRelease(
-            version: version,
             tagName: tagName,
+            numericVersion: version,
+            releaseURL: releaseURL,
             downloadURL: archiveURL,
             appcastURL: appcastURL
         )
