@@ -1171,7 +1171,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
 				INFOPLIST_KEY_LSUIElement = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.01;
+				MARKETING_VERSION = 0.02;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1188,7 +1188,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Status Page Monitor";
 				INFOPLIST_KEY_LSUIElement = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.01;
+				MARKETING_VERSION = 0.02;
 				PRODUCT_BUNDLE_IDENTIFIER = org.statuspagemonitor.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;

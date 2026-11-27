@@ -34,7 +34,8 @@
 "Schedule" = "Pianificazione";
 
 /* Righe provider */
-"Since %@" = "Da %@";
+"Last OK %@" = "Ultimo OK %@";
+"Last OK not recorded" = "Ultimo OK non registrato";
 "Last updated %@" = "Ultimo aggiornamento %@";
 "Refresh %@" = "Aggiorna %@";
 "Open %@ status page" = "Apri la pagina di stato di %@";
@@ -73,6 +74,9 @@
 "Waiting for first check." = "In attesa del primo controllo.";
 
 /* Manual refresh feedback */
+"Refresh all" = "Aggiorna tutti";
+"Refreshing all…" = "Aggiornamento in corso…";
+"Operational: %lld · With issues: %lld · Failed checks: %lld" = "Operativi: %1$lld · Con problemi: %2$lld · Controlli falliti: %3$lld";
 "The service is still operational." = "Il servizio è ancora operativo.";
 "The service is operational again." = "Il servizio è tornato operativo.";
 "The service is operational." = "Il servizio è operativo.";

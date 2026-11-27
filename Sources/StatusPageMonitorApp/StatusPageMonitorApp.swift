@@ -269,7 +269,7 @@ private final class MonitoringModel: ObservableObject {
     @Published private(set) var isCheckingSlack = false
     @Published private(set) var isCheckingStripe = false
     @Published private(set) var isCheckingVercel = false
-    @Published private(set) var nonOperationalSince: [String: Date] = [:]
+    private var lastOperationalAt: [String: Date]
 
     private static let enabledDefaultsKey = "monitor.aircall.enabled"
     private static let bigCommerceEnabledDefaultsKey = "monitor.bigcommerce.enabled"
@@ -287,12 +287,14 @@ private final class MonitoringModel: ObservableObject {
     private static let slackEnabledDefaultsKey = "monitor.slack.enabled"
     private static let stripeEnabledDefaultsKey = "monitor.stripe.enabled"
     private static let vercelEnabledDefaultsKey = "monitor.vercel.enabled"
-    private static let nonOperationalSinceDefaultsKey = "monitor.nonOperationalSince"
+    private static let lastOperationalAtDefaultsKey = "monitor.lastOperationalAt"
     private static let intervalDefaultsKey = "monitor.intervalMinutes"
 
     private var didStartAtLaunch = false
     private var scheduleTask: Task<Void, Never>?
     private var lastObservedHealth: [ServiceID: Bool] = [:]
+    @Published private(set) var isRefreshingAll = false
+    private var activeChecks: [ServiceID: Task<ProviderCheckResult?, Never>] = [:]
     private var pendingRefreshAlerts: [NSPanel] = []
     private var isPresentingRefreshAlert = false
 
@@ -314,7 +316,7 @@ private final class MonitoringModel: ObservableObject {
         isSlackEnabled = defaults.object(forKey: Self.slackEnabledDefaultsKey) as? Bool ?? false
         isStripeEnabled = defaults.object(forKey: Self.stripeEnabledDefaultsKey) as? Bool ?? false
         isVercelEnabled = defaults.object(forKey: Self.vercelEnabledDefaultsKey) as? Bool ?? false
-        nonOperationalSince = (defaults.dictionary(forKey: Self.nonOperationalSinceDefaultsKey) as? [String: Double] ?? [:])
+        lastOperationalAt = (defaults.dictionary(forKey: Self.lastOperationalAtDefaultsKey) as? [String: Double] ?? [:])
             .mapValues(Date.init(timeIntervalSince1970:))
 
         let savedInterval = defaults.object(forKey: Self.intervalDefaultsKey) as? Int ?? 15
@@ -569,8 +571,44 @@ private final class MonitoringModel: ObservableObject {
             isEnabled: enabled,
             isChecking: checking,
             result: result,
-            nonOperationalSince: nonOperationalSince[id.rawValue],
+            lastOperationalAt: lastOperationalAt[id.rawValue],
             refresh: refresh
+        )
+    }
+
+    private func refreshTask(for provider: StatusMenuService) -> Task<ProviderCheckResult?, Never> {
+        if let running = activeChecks[provider.id] { return running }
+        let task = Task {
+            defer { activeChecks[provider.id] = nil }
+            return await provider.refresh()
+        }
+        activeChecks[provider.id] = task
+        return task
+    }
+
+    func refreshAllManually() async {
+        let providers = statusMenuServices
+        guard !isRefreshingAll, !providers.isEmpty else { return }
+        isRefreshingAll = true
+        defer { isRefreshingAll = false }
+
+        let checks = providers.map { refreshTask(for: $0) }
+        var operational = 0
+        var issues = 0
+        var failed = 0
+        for check in checks {
+            guard let result = await check.value else { continue }
+            switch result {
+            case .observed(let observation) where observation.isOperational: operational += 1
+            case .observed: issues += 1
+            case .failed: failed += 1
+            }
+        }
+
+        let locale = LocalizationManager.shared.locale
+        presentRefreshPanel(
+            title: String(localized: LocalizedStringResource("Refresh all", locale: locale)),
+            message: LocalizedStringResource("Operational: \(operational) · With issues: \(issues) · Failed checks: \(failed)", locale: locale)
         )
     }
 
@@ -579,7 +617,7 @@ private final class MonitoringModel: ObservableObject {
               !provider.isChecking else { return }
 
         let previousHealth = lastObservedHealth[id]
-        guard let result = await provider.refresh() else { return }
+        guard let result = await refreshTask(for: provider).value else { return }
         presentRefreshResult(result, for: provider.name, previousHealth: previousHealth)
     }
 
@@ -602,13 +640,18 @@ private final class MonitoringModel: ObservableObject {
             message = LocalizedStringResource("Could not verify the service status.", locale: locale)
         }
 
+        presentRefreshPanel(title: name, message: message)
+    }
+
+    private func presentRefreshPanel(title: String, message: LocalizedStringResource) {
+        let locale = LocalizationManager.shared.locale
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 350, height: 105),
             styleMask: [.titled],
             backing: .buffered,
             defer: false
         )
-        panel.title = name
+        panel.title = title
         panel.hidesOnDeactivate = false
         panel.contentView = NSHostingView(rootView:
             RefreshResultView(message: String(localized: message)) { [weak panel] in
@@ -631,27 +674,13 @@ private final class MonitoringModel: ObservableObject {
     }
 
     private func record(_ result: ProviderCheckResult, for id: ServiceID) {
-        let isOperational: Bool
-        switch result {
-        case .observed(let observation):
-            isOperational = observation.isOperational
-            lastObservedHealth[id] = observation.isOperational
-        case .failed:
-            isOperational = false
-        }
-
-        if isOperational {
-            nonOperationalSince.removeValue(forKey: id.rawValue)
-        } else if nonOperationalSince[id.rawValue] == nil {
-            switch result {
-            case .observed(let observation): nonOperationalSince[id.rawValue] = observation.observedAt
-            case .failed(let failure): nonOperationalSince[id.rawValue] = failure.attemptedAt
-            }
-        }
-
+        guard case .observed(let observation) = result else { return }
+        lastObservedHealth[id] = observation.isOperational
+        guard observation.isOperational else { return }
+        lastOperationalAt[id.rawValue] = observation.observedAt
         UserDefaults.standard.set(
-            nonOperationalSince.mapValues(\.timeIntervalSince1970),
-            forKey: Self.nonOperationalSinceDefaultsKey
+            lastOperationalAt.mapValues(\.timeIntervalSince1970),
+            forKey: Self.lastOperationalAtDefaultsKey
         )
     }
 
@@ -681,22 +710,10 @@ private final class MonitoringModel: ObservableObject {
     }
 
     private func checkEnabledProviders() async {
-        if isAircallEnabled { await self.checkAircallNow() }
-        if isBigCommerceEnabled { await self.checkBigCommerceNow() }
-        if isCanvaEnabled { await self.checkCanvaNow() }
-        if isCloudflareEnabled { await self.checkCloudflareNow() }
-        if isCloudwaysEnabled { await self.checkCloudwaysNow() }
-        if isGitHubEnabled { await self.checkGitHubNow() }
-        if isHubSpotEnabled { await self.checkHubSpotNow() }
-        if isMongoDBEnabled { await self.checkMongoDBNow() }
-        if isMondayEnabled { await self.checkMondayNow() }
-        if isNgrokEnabled { await self.checkNgrokNow() }
-        if isOpenAIEnabled { await self.checkOpenAINow() }
-        if isRegisterEnabled { await self.checkRegisterNow() }
-        if isPayPalEnabled { await self.checkPayPalNow() }
-        if isSlackEnabled { await self.checkSlackNow() }
-        if isStripeEnabled { await self.checkStripeNow() }
-        if isVercelEnabled { await self.checkVercelNow() }
+        for provider in statusMenuServices {
+            guard !Task.isCancelled, !isRefreshingAll else { return }
+            _ = await refreshTask(for: provider).value
+        }
     }
 
     private var hasEnabledProviders: Bool {
@@ -771,7 +788,6 @@ private struct StatusBarLabel: View {
 
 private struct StatusBarMenu: View {
     @Environment(\.openWindow) private var openWindow
-    @Environment(\.locale) private var locale
     @EnvironmentObject private var monitor: MonitoringModel
 
     var body: some View {
@@ -798,12 +814,6 @@ private struct StatusBarMenu: View {
 
         ForEach(nonOperationalProviders) { provider in
             ServiceMenu(provider: provider)
-            if let since = provider.nonOperationalSince, provider.lastUpdatedAt != nil {
-                Text("Since \(since.formatted(timestampStyle))")
-            }
-            if let lastUpdated = provider.lastUpdatedAt {
-                Text("Last updated \(lastUpdated.formatted(timestampStyle))")
-            }
         }
 
         if providers.isEmpty {
@@ -811,6 +821,17 @@ private struct StatusBarMenu: View {
         }
 
         Divider()
+
+        Button {
+            Task { await monitor.refreshAllManually() }
+        } label: {
+            if monitor.isRefreshingAll {
+                Text("Refreshing all…")
+            } else {
+                Text("Refresh all")
+            }
+        }
+        .disabled(providers.isEmpty || monitor.isRefreshingAll)
 
         Button("Settings") {
             openWindow(id: AppIdentity.dashboardWindowID)
@@ -821,10 +842,6 @@ private struct StatusBarMenu: View {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q", modifiers: .command)
-    }
-
-    private var timestampStyle: Date.FormatStyle {
-        .dateTime.year().month(.abbreviated).day().hour().minute().locale(locale)
     }
 }
 
@@ -1111,7 +1128,7 @@ private struct StatusMenuService: Identifiable {
     let isEnabled: Bool
     let isChecking: Bool
     let result: ProviderCheckResult?
-    let nonOperationalSince: Date?
+    let lastOperationalAt: Date?
     let refresh: @MainActor () async -> ProviderCheckResult?
 
     var isOperational: Bool {
@@ -1131,6 +1148,7 @@ private struct StatusMenuService: Identifiable {
 private struct ServiceMenu: View {
     @EnvironmentObject private var monitor: MonitoringModel
     @Environment(\.openURL) private var openURL
+    @Environment(\.locale) private var locale
     let provider: StatusMenuService
 
     var body: some View {
@@ -1142,6 +1160,18 @@ private struct ServiceMenu: View {
 
             Button("Open \(provider.name) status page") {
                 openURL(provider.statusPageURL)
+            }
+
+            if provider.lastUpdatedAt != nil || provider.lastOperationalAt != nil {
+                Divider()
+                if let updated = provider.lastUpdatedAt {
+                    Text("Last updated \(updated.formatted(timestampStyle))")
+                }
+                if let healthy = provider.lastOperationalAt {
+                    Text("Last OK \(healthy.formatted(timestampStyle))")
+                } else {
+                    Text("Last OK not recorded")
+                }
             }
 
             if !provider.isOperational, let result = provider.result {
@@ -1165,6 +1195,10 @@ private struct ServiceMenu: View {
                 Text("\(statusMarker)\(provider.name) · \(Text(statusLabel))")
             }
         }
+    }
+
+    private var timestampStyle: Date.FormatStyle {
+        .dateTime.year().month(.abbreviated).day().hour().minute().locale(locale)
     }
 
     private var statusLabel: LocalizedStringKey {

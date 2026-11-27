@@ -33,7 +33,8 @@
 "Schedule" = "Schedule";
 
 /* Provider rows */
-"Since %@" = "Since %@";
+"Last OK %@" = "Last OK %@";
+"Last OK not recorded" = "Last OK not recorded";
 "Last updated %@" = "Last updated %@";
 "Refresh %@" = "Refresh %@";
 "Open %@ status page" = "Open %@ status page";
@@ -72,6 +73,9 @@
 "Waiting for first check." = "Waiting for first check.";
 
 /* Manual refresh feedback */
+"Refresh all" = "Refresh all";
+"Refreshing all…" = "Refreshing all…";
+"Operational: %lld · With issues: %lld · Failed checks: %lld" = "Operational: %1$lld · With issues: %2$lld · Failed checks: %3$lld";
 "The service is still operational." = "The service is still operational.";
 "The service is operational again." = "The service is operational again.";
 "The service is operational." = "The service is operational.";

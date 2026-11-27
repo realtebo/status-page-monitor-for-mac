@@ -38,7 +38,11 @@ The checked-in Swift package lockfile pins dependency versions. Package sources 
 
 ### Preview releases
 
-Pushing a version tag such as `v0.01` to the official repository runs the macOS preview workflow. It uses the tag as the version shown in the app and publishes the Apple silicon ZIP as a prerelease on GitHub. Preview builds are intended for development and do not carry a Developer ID signature or Apple notarization.
+Each push to `main` in the official repository builds one Apple silicon prerelease. GitHub Actions creates a version tag for the pushed commit, embeds that version in the app, and publishes the ZIP on GitHub Releases. A push containing several commits produces one release.
+
+The default increment is minor, for example `v0.01` → `v0.02`. To request a patch or major release, add a Git trailer on a separate line after a blank line in the **last commit message of the push**. Use `Release-Bump: patch` for `v0.02` → `v0.02.1` or `Release-Bump: major` for `v0.02` → `v1.00`. The next ordinary push increments the minor again. GitHub queues concurrent pushes and reuses the commit’s reserved tag if a run needs to be retried.
+
+Preview builds are unsigned by Developer ID and are not notarized.
 
 ## Project Structure
 

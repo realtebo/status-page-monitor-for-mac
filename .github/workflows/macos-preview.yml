@@ -2,8 +2,11 @@ name: macOS preview release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+
+concurrency:
+  group: macos-main-releases
+  queue: max
 
 jobs:
   release:
@@ -20,27 +23,36 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
+
+      - name: Reserve the release version for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(python3 .github/release-version.py)"
+          tag="v$version"
+          if ! git show-ref --verify --quiet "refs/tags/$tag"; then
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f ref="refs/tags/$tag" -f sha="$GITHUB_SHA" > /dev/null
+          fi
+          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Compile and package
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
-            echo "::error::Expected a version tag such as v0.01 or v0.1.0."
-            exit 1
-          fi
-          version="${GITHUB_REF_NAME#v}"
           xcodebuild -version
           xcodebuild -project StatusPageMonitor.xcodeproj \
             -scheme StatusPageMonitor -configuration Release \
             -destination 'generic/platform=macOS' -derivedDataPath build \
             -onlyUsePackageVersionsFromResolvedFile \
             ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO \
-            MARKETING_VERSION="$version" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
+            MARKETING_VERSION="$RELEASE_VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
 
           app="build/Build/Products/Release/StatusPageMonitor.app"
           actual_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")"
-          if [[ "$actual_version" != "$version" ]]; then
+          if [[ "$actual_version" != "$RELEASE_VERSION" ]]; then
             echo "::error::The app version does not match the release tag."
             exit 1
           fi
@@ -50,7 +62,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "$APP_ARCHIVE" \
-            --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease \
-            --title "Status Page Monitor ${GITHUB_REF_NAME#v} preview" \
-            --notes "Apple silicon preview built by GitHub Actions. This build is not signed with Developer ID or notarized."
+          set -euo pipefail
+          tag="v$RELEASE_VERSION"
+          if release="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,assets)"; then
+            if jq -e '.isDraft' <<< "$release" > /dev/null; then
+              gh release upload "$tag" "$APP_ARCHIVE" --repo "$GITHUB_REPOSITORY" --clobber
+              gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false
+            else
+              jq -e --arg name "$APP_ARCHIVE" 'any(.assets[]; .name == $name and .size > 0)' <<< "$release" > /dev/null
+            fi
+          else
+            gh release create "$tag" "$APP_ARCHIVE" \
+              --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease \
+              --title "Status Page Monitor $RELEASE_VERSION preview" \
+              --notes "Apple silicon preview built by GitHub Actions. This build is not signed with Developer ID or notarized."
+          fi
