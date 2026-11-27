@@ -13,6 +13,9 @@
 "Created by Mirko Tebaldi" = "Created by Mirko Tebaldi";
 "Contact" = "Contact";
 "Quit Status Page Monitor" = "Quit Status Page Monitor";
+"GitHub repository" = "GitHub repository";
+"Pull requests" = "Pull requests";
+"New issue" = "New issue";
 "%lld services operational" = "%lld services operational";
 "%lld services ok" = "%lld services operational";
 "%lld servizi ok" = "%lld services operational";
@@ -31,6 +34,23 @@
 "%lld minutes" = "%lld minutes";
 "Minimum 15 minutes, in 5-minute steps." = "Minimum 15 minutes, in 5-minute steps.";
 "Schedule" = "Schedule";
+
+/* Issue reporting */
+"Feature" = "Feature";
+"Bug" = "Bug";
+"Idea" = "Idea";
+"How-to" = "How-to";
+"Enter a title before opening the GitHub issue form." = "Enter a title before opening the GitHub issue form.";
+"Enter a description before opening the GitHub issue form." = "Enter a description before opening the GitHub issue form.";
+"The GitHub issue form URL could not be created." = "The GitHub issue form URL could not be created.";
+"The browser could not open the GitHub issue form." = "The browser could not open the GitHub issue form.";
+"The GitHub issue URL is too long. Shorten the title or description and try again." = "The GitHub issue URL is too long. Shorten the title or description and try again.";
+"Category" = "Category";
+"Title" = "Title";
+"Description" = "Description";
+"Continue on GitHub" = "Continue on GitHub";
+"Review the draft on GitHub and publish it with your account." = "Review the draft on GitHub and publish it with your account.";
+"Report an issue" = "Report an issue";
 
 /* Provider rows */
 "Last OK %@" = "Last OK %@";

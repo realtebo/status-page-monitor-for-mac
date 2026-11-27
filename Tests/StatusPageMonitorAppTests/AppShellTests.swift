@@ -3,6 +3,37 @@ import Foundation
 import Testing
 @testable import StatusPageMonitor
 
+@Test func issueDraftPreservesCategoryAndTextInGitHubForm() throws {
+    for category in IssueReportCategory.allCases {
+        let draft = IssueReportDraft(category: category, title: "C++ & macOS", description: "È al 50%\n#1 + #2")
+        let url = try IssueReportURLBuilder.makeURL(for: draft, repositoryURL: AppIdentity.repositoryURL)
+        let components = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false))
+        #expect(components.host == "github.com")
+        #expect(components.path == "/realtebo/status-page-monitor-for-mac/issues/new")
+        #expect(components.percentEncodedQuery?.contains("+") == false)
+        #expect(components.queryItems == [
+            URLQueryItem(name: "title", value: "\(category.rawValue) C++ & macOS"),
+            URLQueryItem(name: "body", value: draft.description)
+        ])
+    }
+}
+
+@Test func issueDraftRejectsBlankInputAndOversizedLinks() {
+    var draft = IssueReportDraft(category: .bug, title: " ", description: "Description")
+    #expect(throws: IssueReportValidationError.emptyTitle) {
+        try IssueReportURLBuilder.makeURL(for: draft, repositoryURL: AppIdentity.repositoryURL)
+    }
+    draft.title = "Title"
+    draft.description = "\n "
+    #expect(throws: IssueReportValidationError.emptyDescription) {
+        try IssueReportURLBuilder.makeURL(for: draft, repositoryURL: AppIdentity.repositoryURL)
+    }
+    draft.description = String(repeating: "é", count: IssueReportURLBuilder.maximumURLLength)
+    #expect(throws: IssueReportValidationError.issueURLTooLong) {
+        try IssueReportURLBuilder.makeURL(for: draft, repositoryURL: AppIdentity.repositoryURL)
+    }
+}
+
 @Test func appUsesTheStatusPageMonitorProductName() {
     #expect(AppIdentity.displayName == "Status Page Monitor")
 }

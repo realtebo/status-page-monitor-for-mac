@@ -14,6 +14,9 @@
 "Created by Mirko Tebaldi" = "Creata da Mirko Tebaldi";
 "Contact" = "Contatti";
 "Quit Status Page Monitor" = "Esci da Status Page Monitor";
+"GitHub repository" = "Repository GitHub";
+"Pull requests" = "Pull request";
+"New issue" = "Nuova issue";
 "%lld services operational" = "%lld servizi operativi";
 "%lld services ok" = "%lld servizi operativi";
 "%lld servizi ok" = "%lld servizi ok";
@@ -32,6 +35,23 @@
 "%lld minutes" = "%lld minuti";
 "Minimum 15 minutes, in 5-minute steps." = "Minimo 15 minuti, con incrementi di 5 minuti.";
 "Schedule" = "Pianificazione";
+
+/* Segnalazione issue */
+"Feature" = "Richiesta di funzionalità";
+"Bug" = "Segnalazione di un bug";
+"Idea" = "Suggerimento";
+"How-to" = "Domanda sull’uso dell’app";
+"Enter a title before opening the GitHub issue form." = "Inserisci un titolo prima di aprire il modulo issue di GitHub.";
+"Enter a description before opening the GitHub issue form." = "Inserisci una descrizione prima di aprire il modulo issue di GitHub.";
+"The GitHub issue form URL could not be created." = "Non è stato possibile creare l'URL del modulo issue di GitHub.";
+"The browser could not open the GitHub issue form." = "Il browser non è riuscito ad aprire il modulo su GitHub.";
+"The GitHub issue URL is too long. Shorten the title or description and try again." = "L'URL della issue GitHub è troppo lungo. Riduci il titolo o la descrizione e riprova.";
+"Category" = "Categoria";
+"Title" = "Titolo";
+"Description" = "Descrizione";
+"Continue on GitHub" = "Continua su GitHub";
+"Review the draft on GitHub and publish it with your account." = "Rivedi la bozza su GitHub e pubblicala con il tuo account.";
+"Report an issue" = "Segnala un problema";
 
 /* Righe provider */
 "Last OK %@" = "Ultimo OK %@";

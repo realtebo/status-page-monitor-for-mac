@@ -7,6 +7,7 @@ enum AppIdentity {
     static let symbolName = "waveform.path.ecg"
     static let dashboardWindowID = "dashboard"
     static let contactEmail = "mirkotebaldi@yahoo.it"
+    static let repositoryURL = URL(string: "https://github.com/realtebo/status-page-monitor-for-mac")!
 }
 
 @main
@@ -857,6 +858,7 @@ private struct DashboardView: View {
         case interface
         case providers
         case schedule
+        case newIssue
         case about
 
         var title: LocalizedStringKey {
@@ -864,6 +866,7 @@ private struct DashboardView: View {
             case .interface: "User interface"
             case .providers: "Online service providers"
             case .schedule: "Schedule"
+            case .newIssue: "New issue"
             case .about: "About"
             }
         }
@@ -873,6 +876,7 @@ private struct DashboardView: View {
             case .interface: "macwindow"
             case .providers: "switch.2"
             case .schedule: "clock"
+            case .newIssue: "square.and.pencil"
             case .about: "info.circle"
             }
         }
@@ -881,6 +885,7 @@ private struct DashboardView: View {
     @EnvironmentObject private var monitor: MonitoringModel
     @State private var selectedSection: SettingsSection? = .providers
     @State private var providerSearch = ""
+    @State private var issueDraft = IssueReportDraft(category: .feature, title: "", description: "")
 
     var body: some View {
         NavigationSplitView {
@@ -923,6 +928,8 @@ private struct DashboardView: View {
                     Label("Schedule", systemImage: "clock")
                 }
                 NotificationPermissionSection()
+            case .newIssue:
+                IssueReportView(draft: $issueDraft, repositoryURL: AppIdentity.repositoryURL)
             case .about:
                 Section {
                     Text(verbatim: AppIdentity.displayName)
@@ -943,6 +950,8 @@ private struct DashboardView: View {
                     Link(destination: URL(string: "mailto:\(AppIdentity.contactEmail)")!) {
                         Text(verbatim: AppIdentity.contactEmail)
                     }
+                    Link("GitHub repository", destination: AppIdentity.repositoryURL)
+                    Link("Pull requests", destination: AppIdentity.repositoryURL.appendingPathComponent("pulls"))
                 } header: {
                     Label("Contact", systemImage: "envelope")
                 }
