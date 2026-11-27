@@ -7,7 +7,7 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
     static let shared = OfficialUpdater()
 
     @Published private(set) var installationError: String?
-    @Published private(set) var readyOnQuit = false
+    @Published private(set) var isInstalling = false
 
     private var controller: SPUStandardUpdaterController?
     private var installationEnabled = false
@@ -28,7 +28,7 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
 
     /// The release checker supplies the official appcast attached to the chosen GitHub tag.
     func installIfEnabled(appcastURL: URL) {
-        guard installationEnabled, !readyOnQuit, controller?.updater.sessionInProgress != true else { return }
+        guard installationEnabled, !isInstalling, controller?.updater.sessionInProgress != true else { return }
         feed = appcastURL
         installationError = nil
         if controller == nil {
@@ -61,11 +61,14 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
 
     func updater(_ updater: SPUUpdater, willInstallUpdateOnQuit item: SUAppcastItem,
                  immediateInstallationBlock immediateInstallHandler: @escaping () -> Void) -> Bool {
-        readyOnQuit = true
-        return false  // Sparkle keeps the staged installation alive until the app exits.
+        guard installationEnabled else { return false }
+        isInstalling = true
+        immediateInstallHandler()
+        return true
     }
 
     func updater(_ updater: SPUUpdater, didAbortWithError error: Error) {
+        isInstalling = false
         if installationEnabled {
             installationError = error.localizedDescription
         }

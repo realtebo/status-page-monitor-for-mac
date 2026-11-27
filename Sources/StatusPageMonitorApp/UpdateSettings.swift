@@ -326,9 +326,9 @@ struct UpdatesSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
-                if updater.readyOnQuit {
+                if updater.isInstalling {
                     Label(
-                        "Update ready. It will be installed when you quit the app.",
+                        "Installing update. The app will restart automatically.",
                         systemImage: "checkmark.circle"
                     )
                     .font(.caption)
