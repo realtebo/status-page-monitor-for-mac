@@ -167,8 +167,8 @@ final class UpdateSettingsModel: ObservableObject {
             defaults.set(release.version, forKey: Self.latestOnlineVersionKey)
             availableRelease = release.numericVersion > currentVersion ? release : nil
             recordCheckTime()
+            installKnownReleaseIfPossible()
             if case .scheduled(let generation) = source, let release = availableRelease {
-                installKnownReleaseIfPossible()
                 await notifyIfNeeded(for: release, generation: generation)
             }
         } catch {
