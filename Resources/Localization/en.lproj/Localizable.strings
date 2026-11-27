@@ -155,7 +155,9 @@
 "View release notes" = "View release notes";
 "This release cannot be installed automatically." = "This release cannot be installed automatically.";
 "Installing update. The app will restart automatically." = "Installing update. The app will restart automatically.";
-"Automatic installation failed: %@" = "Automatic installation failed: %@";
+"Download and install" = "Download and install";
+"Preparing update…" = "Preparing update…";
+"Installation failed: %@" = "Installation failed: %@";
 "Could not check for updates: %@" = "Could not check for updates: %@";
 "No updates available." = "No updates available.";
 "Update available" = "Update available";

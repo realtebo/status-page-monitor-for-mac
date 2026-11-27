@@ -7,11 +7,15 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
     static let shared = OfficialUpdater()
 
     @Published private(set) var installationError: String?
+    @Published private(set) var isPreparingUpdate = false
     @Published private(set) var isInstalling = false
 
     private var controller: SPUStandardUpdaterController?
     private var installationEnabled = false
+    private var userRequestedInstallation = false
     private var feed: URL?
+
+    private var canInstall: Bool { installationEnabled || userRequestedInstallation }
 
     var isAvailable: Bool {
         guard let key = Bundle.main.object(forInfoDictionaryKey: "SUPublicEDKey") as? String else { return false }
@@ -20,7 +24,7 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
 
     func configure(automaticChecks: Bool, automaticInstallation: Bool) {
         installationEnabled = automaticChecks && automaticInstallation && isAvailable
-        if !installationEnabled {
+        if !canInstall {
             controller?.updater.automaticallyDownloadsUpdates = false
             installationError = nil
         }
@@ -28,7 +32,17 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
 
     /// The release checker supplies the official appcast attached to the chosen GitHub tag.
     func installIfEnabled(appcastURL: URL) {
-        guard installationEnabled, !isInstalling, controller?.updater.sessionInProgress != true else { return }
+        guard installationEnabled else { return }
+        startInstallation(appcastURL: appcastURL, userRequested: false)
+    }
+
+    func installNow(appcastURL: URL) {
+        startInstallation(appcastURL: appcastURL, userRequested: true)
+    }
+
+    private func startInstallation(appcastURL: URL, userRequested: Bool) {
+        guard isAvailable, !isPreparingUpdate, !isInstalling,
+              controller?.updater.sessionInProgress != true else { return }
         feed = appcastURL
         installationError = nil
         if controller == nil {
@@ -42,6 +56,8 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
             }
         }
         guard let updater = controller?.updater else { return }
+        userRequestedInstallation = userRequested
+        isPreparingUpdate = true
         updater.automaticallyDownloadsUpdates = true
         updater.checkForUpdatesInBackground()
     }
@@ -51,7 +67,7 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
     }
 
     func updater(_ updater: SPUUpdater, shouldProceedWithUpdate item: SUAppcastItem, updateCheck: SPUUpdateCheck) throws {
-        guard installationEnabled, let feed else { throw CancellationError() }
+        guard canInstall, let feed else { throw CancellationError() }
         let release = feed.deletingLastPathComponent()
         guard item.fileURL == release.appendingPathComponent("StatusPageMonitor-macOS-arm64.zip"),
               "v" + item.displayVersionString == release.lastPathComponent else {
@@ -61,16 +77,25 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
 
     func updater(_ updater: SPUUpdater, willInstallUpdateOnQuit item: SUAppcastItem,
                  immediateInstallationBlock immediateInstallHandler: @escaping () -> Void) -> Bool {
-        guard installationEnabled else { return false }
+        guard canInstall else { return false }
+        isPreparingUpdate = false
         isInstalling = true
         immediateInstallHandler()
         return true
     }
 
     func updater(_ updater: SPUUpdater, didAbortWithError error: Error) {
-        isInstalling = false
-        if installationEnabled {
+        if canInstall {
             installationError = error.localizedDescription
+        }
+    }
+
+    func updater(_ updater: SPUUpdater, didFinishUpdateCycleFor updateCheck: SPUUpdateCheck, error: Error?) {
+        userRequestedInstallation = false
+        isPreparingUpdate = false
+        isInstalling = false
+        if !installationEnabled {
+            updater.automaticallyDownloadsUpdates = false
         }
     }
 }

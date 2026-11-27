@@ -156,7 +156,9 @@
 "View release notes" = "Vedi le note di rilascio";
 "This release cannot be installed automatically." = "Questa versione richiede l’installazione manuale.";
 "Installing update. The app will restart automatically." = "Installazione dell’aggiornamento in corso. L’app si riavvierà automaticamente.";
-"Automatic installation failed: %@" = "Installazione automatica non riuscita: %@";
+"Download and install" = "Scarica e installa";
+"Preparing update…" = "Preparazione dell’aggiornamento…";
+"Installation failed: %@" = "Installazione non riuscita: %@";
 "Could not check for updates: %@" = "Controllo degli aggiornamenti non riuscito: %@";
 "No updates available." = "L’app è aggiornata.";
 "Update available" = "Aggiornamento disponibile";

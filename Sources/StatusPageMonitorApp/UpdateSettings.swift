@@ -318,6 +318,12 @@ struct UpdatesSettingsView: View {
                 if let releaseURL = model.availableReleaseURL {
                     Link("View release notes", destination: releaseURL)
                 }
+                if let appcastURL = model.availableRelease?.appcastURL, updater.isAvailable {
+                    Button("Download and install") {
+                        updater.installNow(appcastURL: appcastURL)
+                    }
+                    .disabled(updater.isPreparingUpdate || updater.isInstalling)
+                }
                 if model.availableRelease?.appcastURL == nil {
                     Label(
                         "This release cannot be installed automatically.",
@@ -326,7 +332,10 @@ struct UpdatesSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
-                if updater.isInstalling {
+                if updater.isPreparingUpdate {
+                    ProgressView("Preparing update…")
+                        .controlSize(.small)
+                } else if updater.isInstalling {
                     Label(
                         "Installing update. The app will restart automatically.",
                         systemImage: "checkmark.circle"
@@ -335,7 +344,7 @@ struct UpdatesSettingsView: View {
                     .foregroundStyle(.secondary)
                 }
                 if let error = updater.installationError {
-                    Text("Automatic installation failed: \(error)")
+                    Text("Installation failed: \(error)")
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
