@@ -5,20 +5,38 @@ import Testing
 @Test func registerMapsOperationalStatusClass() async {
     let date = Date(timeIntervalSince1970: 1_800_000_000)
     let provider = RegisterStatusProvider(transport: RegisterFixtureTransport(response: fixture("register-operational")))
-    #expect(await provider.check(at: date) == .observed(ServiceObservation(condition: .operational, activeIncidents: [], observedAt: date)))
+    let expected = ServiceObservation(
+        condition: .operational,
+        activeIncidents: [],
+        observedAt: date,
+        providerReportsHealthy: true
+    )
+    #expect(await provider.check(at: date) == .observed(expected))
 }
 
 @Test func registerUsesStatusTextWhenBodyIndicatorIsAbsent() async {
     let date = Date(timeIntervalSince1970: 1_800_000_000)
     let provider = RegisterStatusProvider(transport: RegisterFixtureTransport(response: fixture("register-text-fallback")))
-    #expect(await provider.check(at: date) == .observed(ServiceObservation(condition: .operational, activeIncidents: [], observedAt: date)))
+    let expected = ServiceObservation(
+        condition: .operational,
+        activeIncidents: [],
+        observedAt: date,
+        providerReportsHealthy: true
+    )
+    #expect(await provider.check(at: date) == .observed(expected))
 }
 
 @Test func registerMapsScheduledMaintenanceAndKeepsItsIncident() async {
     let date = Date(timeIntervalSince1970: 1_800_000_000)
     let classProvider = RegisterStatusProvider(transport: RegisterFixtureTransport(response: fixture("register-class-maintenance")))
     let incidentProvider = RegisterStatusProvider(transport: RegisterFixtureTransport(response: fixture("register-maintenance-incident")))
-    #expect(await classProvider.check(at: date) == .observed(ServiceObservation(condition: .maintenance, activeIncidents: [], observedAt: date)))
+    let expected = ServiceObservation(
+        condition: .maintenance,
+        activeIncidents: [],
+        observedAt: date,
+        providerReportsHealthy: true
+    )
+    #expect(await classProvider.check(at: date) == .observed(expected))
 
     let result = await incidentProvider.check(at: date)
     guard case .observed(let observation) = result, let incident = observation.activeIncidents.first else {
