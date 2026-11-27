@@ -38,9 +38,16 @@ The checked-in Swift package lockfile pins dependency versions. Package sources 
 
 ### Preview releases
 
-Each push to `main` in the official repository builds one Apple silicon prerelease. GitHub Actions creates a version tag for the pushed commit, embeds that version in the app, and publishes the ZIP on GitHub Releases. A push containing several commits produces one release.
+A maintainer starts a release by pushing an annotated version tag to the official repository. GitHub Actions uses the tag version in the app and publishes the Apple silicon ZIP as a prerelease. Ordinary pushes to `main` only update the source.
 
-The default increment is minor, for example `v0.01` → `v0.02`. To request a patch or major release, add a Git trailer on a separate line after a blank line in the **last commit message of the push**. Use `Release-Bump: patch` for `v0.02` → `v0.02.1` or `Release-Bump: major` for `v0.02` → `v1.00`. The next ordinary push increments the minor again. GitHub queues concurrent pushes and reuses the commit’s reserved tag if a run needs to be retried.
+Before tagging, review the changes since the previous release. Ask the release owner for the changelog text or draft it from the changes being shipped. Describe what users can now do, what changed, and which bugs were fixed. Put the final Markdown in the tag message. GitHub uses it as the release notes.
+
+For example, when releasing `v0.03`, run the following commands at the commit you intend to ship. The first command opens your Git editor for the changelog. The second publishes that specific tag.
+
+```bash
+git tag -a v0.03
+git push origin refs/tags/v0.03
+```
 
 Preview builds are unsigned by Developer ID and are not notarized.
 

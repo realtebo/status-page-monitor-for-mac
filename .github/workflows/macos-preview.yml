@@ -2,15 +2,16 @@ name: macOS preview release
 
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v[0-9]*'
 
 concurrency:
-  group: macos-main-releases
+  group: macos-preview-${{ github.ref }}
   queue: max
 
 jobs:
   release:
-    if: github.repository == 'realtebo/status-page-monitor-for-mac'
+    if: github.repository == 'realtebo/status-page-monitor-for-mac' && github.event.created && !github.event.deleted
     runs-on: xcode-27
     timeout-minutes: 20
     permissions:
@@ -25,18 +26,30 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Reserve the release version for this commit
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Read the version and changelog from the annotated tag
+        shell: bash
         run: |
           set -euo pipefail
-          version="$(python3 .github/release-version.py)"
-          tag="v$version"
-          if ! git show-ref --verify --quiet "refs/tags/$tag"; then
-            gh api "repos/$GITHUB_REPOSITORY/git/refs" \
-              -f ref="refs/tags/$tag" -f sha="$GITHUB_SHA" > /dev/null
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "::error::Expected a version tag such as v0.03 or v0.02.1."
+            exit 1
           fi
-          echo "RELEASE_VERSION=$version" >> "$GITHUB_ENV"
+          if [[ "$(git cat-file -t "$GITHUB_REF")" != tag ]]; then
+            echo "::error::An annotated tag with release notes is required."
+            exit 1
+          fi
+          if [[ "$(git rev-parse "$GITHUB_REF^{commit}")" != "$(git rev-parse HEAD)" ]]; then
+            echo "::error::The tag and checkout must refer to the same commit."
+            exit 1
+          fi
+          notes="$RUNNER_TEMP/release-notes.md"
+          git for-each-ref --format='%(contents)' "$GITHUB_REF" \
+            | sed -E '/^-----BEGIN (PGP SIGNATURE|SSH SIGNATURE|SIGNED MESSAGE)-----$/,$d' > "$notes"
+          if ! grep -q '[^[:space:]]' "$notes"; then
+            echo "::error::The tag message must describe the changes in this release."
+            exit 1
+          fi
+          echo "RELEASE_VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
 
       - name: Compile and package
         shell: bash
@@ -67,7 +80,7 @@ jobs:
           if release="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,assets)"; then
             if jq -e '.isDraft' <<< "$release" > /dev/null; then
               gh release upload "$tag" "$APP_ARCHIVE" --repo "$GITHUB_REPOSITORY" --clobber
-              gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false
+              gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --notes-file "$RUNNER_TEMP/release-notes.md"
             else
               jq -e --arg name "$APP_ARCHIVE" 'any(.assets[]; .name == $name and .size > 0)' <<< "$release" > /dev/null
             fi
@@ -75,5 +88,5 @@ jobs:
             gh release create "$tag" "$APP_ARCHIVE" \
               --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease \
               --title "Status Page Monitor $RELEASE_VERSION preview" \
-              --notes "Apple silicon preview built by GitHub Actions. This build is not signed with Developer ID or notarized."
+              --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
