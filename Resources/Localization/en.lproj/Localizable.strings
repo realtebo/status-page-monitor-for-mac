@@ -161,6 +161,8 @@
 "Could not check for updates: %@" = "Could not check for updates: %@";
 "No updates available." = "No updates available.";
 "Update available" = "Update available";
+"Update installed" = "Update installed";
+"Status Page Monitor updated to version %@." = "Status Page Monitor updated to version %@.";
 "Status Page Monitor version %@ is available." = "Status Page Monitor version %@ is available.";
 "The installed app version is invalid." = "The installed app version is invalid.";
 "The published updates require Apple silicon." = "The published updates require Apple silicon.";

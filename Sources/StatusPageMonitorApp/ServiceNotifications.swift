@@ -17,9 +17,13 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
     @Published private(set) var permissionRequestState: PermissionRequestState = .idle
 
     private static let serviceAlertsKey = "notifications.serviceAlertsEnabled"
+    private static let pendingUpdateVersionKey = "updates.pendingInstallationVersion"
     private nonisolated static let incidentCategoryID = "service-incident"
     private nonisolated static let openStatusPageActionID = "open-service-status-page"
     private nonisolated static let providerIDKey = "service-provider-id"
+    private nonisolated static let updateInstalledCategoryID = "update-installed"
+    private nonisolated static let openReleaseNotesActionID = "open-release-notes"
+    private nonisolated static let installedVersionKey = "installed-update-version"
     private let defaults: UserDefaults
     @Published var serviceAlertsEnabled: Bool {
         didSet { defaults.set(serviceAlertsEnabled, forKey: Self.serviceAlertsKey) }
@@ -42,9 +46,35 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
     /// Installs the foreground presentation delegate and reads the current system permission.
     func install() {
         center.delegate = self
-        center.setNotificationCategories([Self.incidentCategory(locale: LocalizationManager.shared.locale)])
+        registerCategories(locale: LocalizationManager.shared.locale)
+        let installedVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let completedUpdate = takeCompletedInstallation(installedVersion: installedVersion)
         Task {
             await refreshAuthorizationStatus()
+            if let completedUpdate {
+                await postInstalledUpdate(version: completedUpdate)
+            }
+        }
+    }
+
+    func recordPendingInstallation(version: String) {
+        defaults.set(version, forKey: Self.pendingUpdateVersionKey)
+    }
+
+    func takeCompletedInstallation(installedVersion: String?) -> String? {
+        guard let pendingVersion = defaults.string(forKey: Self.pendingUpdateVersionKey) else { return nil }
+        defaults.removeObject(forKey: Self.pendingUpdateVersionKey)
+        return pendingVersion == installedVersion ? pendingVersion : nil
+    }
+
+    private func postInstalledUpdate(version: String) async {
+        guard authorizationStatus == .authorized || authorizationStatus == .provisional else { return }
+        let locale = LocalizationManager.shared.locale
+        let content = Self.makeInstalledUpdateContent(version: version, locale: locale)
+        do {
+            try await center.add(UNNotificationRequest(identifier: "update.installed.\(version)", content: content, trigger: nil))
+        } catch {
+            NSLog("Could not post an installation confirmation: %@", String(describing: error))
         }
     }
 
@@ -96,7 +126,7 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
             locale: locale
         )
         if transition == .incident {
-            center.setNotificationCategories([Self.incidentCategory(locale: locale)])
+            registerCategories(locale: locale)
         }
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
@@ -172,6 +202,41 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
         )
     }
 
+    static func makeInstalledUpdateContent(version: String, locale: Locale) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: LocalizedStringResource("Update installed", locale: locale))
+        content.body = String(localized: LocalizedStringResource("Status Page Monitor updated to version \(version).", locale: locale))
+        content.categoryIdentifier = updateInstalledCategoryID
+        content.userInfo = [installedVersionKey: version]
+        content.sound = .default
+        return content
+    }
+
+    static func updateInstalledCategory(locale: Locale) -> UNNotificationCategory {
+        UNNotificationCategory(
+            identifier: updateInstalledCategoryID,
+            actions: [UNNotificationAction(
+                identifier: openReleaseNotesActionID,
+                title: String(localized: LocalizedStringResource("View release notes", locale: locale))
+            )],
+            intentIdentifiers: []
+        )
+    }
+
+    private func registerCategories(locale: Locale) {
+        center.setNotificationCategories([
+            Self.incidentCategory(locale: locale),
+            Self.updateInstalledCategory(locale: locale)
+        ])
+    }
+
+    nonisolated static func releaseNotesURL(actionIdentifier: String, userInfo: [AnyHashable: Any]) -> URL? {
+        guard actionIdentifier == openReleaseNotesActionID || actionIdentifier == UNNotificationDefaultActionIdentifier,
+              let version = userInfo[installedVersionKey] as? String,
+              GitHubReleaseVersion(tagName: "v\(version)") != nil else { return nil }
+        return AppIdentity.repositoryURL.appendingPathComponent("releases/tag/v\(version)")
+    }
+
     nonisolated static func statusPageURL(actionIdentifier: String, userInfo: [AnyHashable: Any]) -> URL? {
         guard actionIdentifier == openStatusPageActionID,
               let rawID = userInfo[providerIDKey] as? String,
@@ -183,10 +248,10 @@ final class ServiceNotifications: NSObject, ObservableObject, UNUserNotification
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        guard let url = Self.statusPageURL(
-            actionIdentifier: response.actionIdentifier,
-            userInfo: response.notification.request.content.userInfo
-        ) else { return }
+        let action = response.actionIdentifier
+        let userInfo = response.notification.request.content.userInfo
+        guard let url = Self.statusPageURL(actionIdentifier: action, userInfo: userInfo)
+            ?? Self.releaseNotesURL(actionIdentifier: action, userInfo: userInfo) else { return }
         await MainActor.run { _ = NSWorkspace.shared.open(url) }
     }
 

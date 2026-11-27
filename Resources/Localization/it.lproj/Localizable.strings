@@ -162,6 +162,8 @@
 "Could not check for updates: %@" = "Controllo degli aggiornamenti non riuscito: %@";
 "No updates available." = "L’app è aggiornata.";
 "Update available" = "Aggiornamento disponibile";
+"Update installed" = "Aggiornamento installato";
+"Status Page Monitor updated to version %@." = "Status Page Monitor è stato aggiornato alla versione %@.";
 "Status Page Monitor version %@ is available." = "È disponibile la versione %@ di Status Page Monitor.";
 "The installed app version is invalid." = "La versione installata dell’app non è valida.";
 "The published updates require Apple silicon." = "Gli aggiornamenti pubblicati richiedono un Mac con chip Apple.";

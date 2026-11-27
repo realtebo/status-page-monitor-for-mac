@@ -429,6 +429,33 @@ private func testMacRelease(_ tag: String) throws -> GitHubMacRelease {
     #expect(retryTime >= checkedAt)
 }
 
+@MainActor
+@Test func installationNotificationRequiresTheNewVersionAndLinksToItsRelease() throws {
+    let suite = "InstalledUpdateTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    ServiceNotifications(defaults: defaults).recordPendingInstallation(version: "0.0.10")
+    let reopened = ServiceNotifications(defaults: defaults)
+    #expect(reopened.takeCompletedInstallation(installedVersion: "0.0.9") == nil)
+    #expect(reopened.takeCompletedInstallation(installedVersion: "0.0.10") == nil)
+
+    ServiceNotifications(defaults: defaults).recordPendingInstallation(version: "0.0.10")
+    let version = try #require(reopened.takeCompletedInstallation(installedVersion: "0.0.10"))
+    #expect(reopened.takeCompletedInstallation(installedVersion: version) == nil)
+
+    let locale = Locale(identifier: "it")
+    let content = ServiceNotifications.makeInstalledUpdateContent(version: version, locale: locale)
+    let category = ServiceNotifications.updateInstalledCategory(locale: locale)
+    #expect(content.title == "Aggiornamento installato")
+    #expect(content.body.contains(version))
+    #expect(content.categoryIdentifier == category.identifier)
+    let action = try #require(category.actions.first)
+    #expect(action.title == "Vedi le note di rilascio")
+    #expect(ServiceNotifications.releaseNotesURL(actionIdentifier: action.identifier, userInfo: content.userInfo)
+        == URL(string: "https://github.com/realtebo/status-page-monitor-for-mac/releases/tag/v0.0.10"))
+    #expect(ServiceNotifications.releaseNotesURL(actionIdentifier: action.identifier, userInfo: [:]) == nil)
+}
+
 private actor UpdateClockProbe {
     private(set) var checks = 0
     private(set) var intervals: [Duration] = []

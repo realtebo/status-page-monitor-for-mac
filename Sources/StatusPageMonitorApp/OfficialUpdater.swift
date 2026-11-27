@@ -80,6 +80,7 @@ final class OfficialUpdater: NSObject, ObservableObject, SPUUpdaterDelegate {
         guard canInstall else { return false }
         isPreparingUpdate = false
         isInstalling = true
+        ServiceNotifications.shared.recordPendingInstallation(version: item.displayVersionString)
         immediateInstallHandler()
         return true
     }
