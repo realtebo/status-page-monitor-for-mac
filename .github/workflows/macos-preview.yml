@@ -1,4 +1,4 @@
-name: macOS preview release
+name: macOS release
 
 on:
   push:
@@ -120,18 +120,19 @@ jobs:
           test -n "$(xmllint --xpath "string($enclosure/@*[local-name()='edSignature'])" "$archives/appcast.xml")"
           cp "$archives/appcast.xml" appcast.xml
 
-      - name: Publish preview to GitHub Releases
+      - name: Publish to GitHub Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           tag="v$RELEASE_VERSION"
-          if release="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,isPrerelease,assets)"; then
+          title="Status Page Monitor $RELEASE_VERSION"
+          if release="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft,assets)"; then
             if jq -e '.isDraft' <<< "$release" > /dev/null; then
               gh release upload "$tag" "$APP_ARCHIVE" appcast.xml \
                 --repo "$GITHUB_REPOSITORY" --clobber
               gh release edit "$tag" --repo "$GITHUB_REPOSITORY" \
-                --draft=false --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
+                --draft=false --prerelease=false --title "$title" --notes-file "$RUNNER_TEMP/release-notes.md"
             else
               jq -e --arg archive "$APP_ARCHIVE" \
                 'any(.assets[]; .name == $archive and .size > 0) and any(.assets[]; .name == "appcast.xml" and .size > 0)' \
@@ -139,11 +140,11 @@ jobs:
             fi
           else
             gh release create "$tag" --repo "$GITHUB_REPOSITORY" --verify-tag \
-              --draft --prerelease \
-              --title "Status Page Monitor $RELEASE_VERSION preview" \
+              --draft \
+              --title "$title" \
               --notes-file "$RUNNER_TEMP/release-notes.md"
             gh release upload "$tag" "$APP_ARCHIVE" appcast.xml \
               --repo "$GITHUB_REPOSITORY"
             gh release edit "$tag" --repo "$GITHUB_REPOSITORY" \
-              --draft=false --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
+              --draft=false --prerelease=false --notes-file "$RUNNER_TEMP/release-notes.md"
           fi

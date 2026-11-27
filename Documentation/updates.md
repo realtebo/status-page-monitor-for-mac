@@ -2,7 +2,7 @@
 
 The app checks the public GitHub Releases API at startup and hourly while automatic checks are enabled. It treats the historical tags `v0.01` and `v0.02` as `0.0.1` and `0.0.2`, compares numeric version components, and includes prereleases with the official Apple silicon ZIP. An available release appears in Settings and the menu bar. Notifications and automatic installation are separate opt-ins.
 
-A signed release includes a Sparkle 2.10.1 appcast alongside its ZIP. The app embeds the maintainer's public Ed25519 key and verifies the update before extraction. Sparkle normally installs a prepared update when the app quits. Older releases containing only a ZIP can still be announced. Users of v0.01 and v0.02 must install the first update-enabled release manually. The ad hoc macOS signature used for preview builds does not provide Apple Developer ID or notarization.
+A signed release includes a Sparkle 2.10.1 appcast alongside its ZIP. The app embeds the maintainer's public Ed25519 key and verifies the update before extraction. Sparkle normally installs a prepared update when the app quits. Older releases containing only a ZIP can still be announced. Users of v0.01 and v0.02 must install the first update-enabled release manually. The ad hoc macOS signature used for release builds does not provide Apple Developer ID or notarization.
 
 ## Configure the signing key once
 
@@ -40,7 +40,7 @@ For a local update-enabled build, pass `SPARKLE_PUBLIC_ED_KEY` with the public k
 
 ## Publish a release
 
-Follow the annotated-tag procedure in the [README](../README.md#preview-releases). The workflow uses the tag as the marketing version, the workflow run number as the internal build number, and the tag message as the release notes. A normal push to main only updates the source.
+Follow the annotated-tag procedure in the [README](../README.md#releases). The workflow uses the tag as the marketing version, the workflow run number as the internal build number, and the tag message as the release notes. A normal push to main only updates the source.
 
 Xcode signs the bundled app and embedded frameworks ad hoc. The job verifies the app with `codesign`, creates the ZIP, then uses the pinned Sparkle package's `generate_appcast` executable to sign the archive and embed the notes. The secret is available only to the signing step. The workflow publishes the draft after uploading both assets:
 

@@ -36,9 +36,9 @@ xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -confi
 
 The checked-in Swift package lockfile pins dependency versions. Package sources and build products are kept under `build/` by these commands.
 
-### Preview releases
+### Releases
 
-A maintainer starts a release by pushing an annotated version tag to the official repository. GitHub Actions uses the tag version in the app and publishes the Apple silicon ZIP as a prerelease. Ordinary pushes to `main` only update the source.
+A maintainer starts a release by pushing an annotated version tag to the official repository. GitHub Actions uses the tag version in the app and publishes the Apple silicon ZIP as a regular GitHub release. Ordinary pushes to `main` only update the source.
 
 Before tagging, review the changes since the previous release. Ask the release owner for the changelog text or draft it from the changes being shipped. Describe what users can now do, what changed, and which bugs were fixed. Put the final Markdown in the tag message. GitHub uses it as the release notes.
 
@@ -51,7 +51,7 @@ git push origin refs/tags/v0.03
 
 Configure the Sparkle signing key before tagging the first update-enabled release. Users of v0.01 and v0.02 install that release manually. See [update signing and setup](Documentation/updates.md).
 
-Preview builds are unsigned by Developer ID and are not notarized.
+Release builds use ad hoc macOS signing.
 
 ## Project Structure
 
