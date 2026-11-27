@@ -36,6 +36,10 @@ xcodebuild -project StatusPageMonitor.xcodeproj -scheme StatusPageMonitor -confi
 
 The checked-in Swift package lockfile pins dependency versions. Package sources and build products are kept under `build/` by these commands.
 
+### Preview releases
+
+Pushing a version tag such as `v0.01` to the official repository runs the macOS preview workflow. It uses the tag as the version shown in the app and publishes the Apple silicon ZIP as a prerelease on GitHub. Preview builds are intended for development and do not carry a Developer ID signature or Apple notarization.
+
 ## Project Structure
 
 - `Sources/StatusPageMonitorApp/` — native SwiftUI application and menu bar interface

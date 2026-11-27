@@ -1,0 +1,56 @@
+name: macOS preview release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    if: github.repository == 'realtebo/status-page-monitor-for-mac'
+    runs-on: xcode-27
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
+      APP_ARCHIVE: StatusPageMonitor-macOS-arm64.zip
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compile and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "::error::Expected a version tag such as v0.01 or v0.1.0."
+            exit 1
+          fi
+          version="${GITHUB_REF_NAME#v}"
+          xcodebuild -version
+          xcodebuild -project StatusPageMonitor.xcodeproj \
+            -scheme StatusPageMonitor -configuration Release \
+            -destination 'generic/platform=macOS' -derivedDataPath build \
+            -onlyUsePackageVersionsFromResolvedFile \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO \
+            MARKETING_VERSION="$version" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
+
+          app="build/Build/Products/Release/StatusPageMonitor.app"
+          actual_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")"
+          if [[ "$actual_version" != "$version" ]]; then
+            echo "::error::The app version does not match the release tag."
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$app" "$APP_ARCHIVE"
+
+      - name: Publish preview to GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "$APP_ARCHIVE" \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --prerelease \
+            --title "Status Page Monitor ${GITHUB_REF_NAME#v} preview" \
+            --notes "Apple silicon preview built by GitHub Actions. This build is not signed with Developer ID or notarized."
