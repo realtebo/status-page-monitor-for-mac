@@ -16,19 +16,8 @@ struct StatusPageMonitorApp: App {
     @StateObject private var localization = LocalizationManager.shared
 
     var body: some Scene {
-        WindowGroup("Settings", id: AppIdentity.dashboardWindowID) {
-            DashboardView()
-                .environmentObject(monitor)
-                .environment(\.locale, localization.locale)
-                .background {
-                    SettingsDockPresence()
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-        }
-
         MenuBarExtra {
-            StatusBarMenu()
+            StatusBarMenu(openSettings: appLifecycle.openSettings)
                 .environmentObject(monitor)
                 .environment(\.locale, localization.locale)
         } label: {
@@ -39,78 +28,54 @@ struct StatusPageMonitorApp: App {
     }
 }
 
-private struct SettingsDockPresence: NSViewRepresentable {
-    func makeNSView(context: Context) -> WindowObserver { WindowObserver() }
+@MainActor
+final class AppLifecycleDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    private(set) var settingsWindow: NSWindow?
 
-    func updateNSView(_ nsView: WindowObserver, context: Context) {}
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        ServiceNotifications.shared.install()
+        MonitoringModel.shared.startChecksAtLaunch()
+    }
 
-    final class WindowObserver: NSView {
-        private static var openSettingsWindows: Set<ObjectIdentifier> = []
-        private static let dockIcon = Bundle.main.url(forResource: "AppIcon", withExtension: "icns")
-            .flatMap { NSImage(contentsOf: $0) }
-        private weak var settingsWindow: NSWindow?
-
-        override func viewDidMoveToWindow() {
-            super.viewDidMoveToWindow()
-            guard settingsWindow !== window else { return }
-
-            if let settingsWindow {
-                NotificationCenter.default.removeObserver(self, name: nil, object: settingsWindow)
-                Self.openSettingsWindows.remove(ObjectIdentifier(settingsWindow))
-            }
-
+    func openSettings() {
+        let window: NSWindow
+        if let existing = settingsWindow {
+            window = existing
+        } else {
+            window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 800, height: 560),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered, defer: false
+            )
+            window.isRestorable = false
+            window.isReleasedWhenClosed = false
+            window.delegate = self
+            window.contentViewController = NSHostingController(rootView: SettingsWindowContent())
+            window.title = LocalizationManager.shared.localized("Settings")
+            window.center()
+            window.setFrameAutosaveName(AppIdentity.dashboardWindowID)
             settingsWindow = window
-            if let window {
-                NotificationCenter.default.addObserver(
-                    self, selector: #selector(windowDidBecomeKey),
-                    name: NSWindow.didBecomeKeyNotification, object: window
-                )
-                NotificationCenter.default.addObserver(
-                    self, selector: #selector(windowWillClose),
-                    name: NSWindow.willCloseNotification, object: window
-                )
-                Self.openSettingsWindows.insert(ObjectIdentifier(window))
-            }
-            Self.scheduleDockUpdate()
         }
 
-        @objc private func windowDidBecomeKey(_ notification: Notification) {
-            guard let settingsWindow else { return }
-            Self.openSettingsWindows.insert(ObjectIdentifier(settingsWindow))
-            Self.scheduleDockUpdate()
-        }
+        NSApp.setActivationPolicy(.regular)
+        if window.isMiniaturized { window.deminiaturize(nil) }
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+    }
 
-        @objc private func windowWillClose(_ notification: Notification) {
-            guard let settingsWindow else { return }
-            Self.openSettingsWindows.remove(ObjectIdentifier(settingsWindow))
-            Self.scheduleDockUpdate()
-        }
-
-        static func scheduleDockUpdate() {
-            DispatchQueue.main.async {
-                Self.updateDockPresence()
-            }
-        }
-
-        private static func updateDockPresence() {
-            let application = NSApplication.shared
-            let policy: NSApplication.ActivationPolicy = openSettingsWindows.isEmpty ? .accessory : .regular
-
-            if let icon = dockIcon {
-                application.applicationIconImage = icon
-            }
-            if application.activationPolicy() != policy {
-                application.setActivationPolicy(policy)
-            }
-        }
+    func windowWillClose(_ notification: Notification) {
+        settingsWindow = nil
+        NSApp.setActivationPolicy(.accessory)
     }
 }
 
-@MainActor
-private final class AppLifecycleDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        SettingsDockPresence.WindowObserver.scheduleDockUpdate()
-        MonitoringModel.shared.startChecksAtLaunch()
+private struct SettingsWindowContent: View {
+    @ObservedObject private var localization = LocalizationManager.shared
+
+    var body: some View {
+        DashboardView()
+            .environmentObject(MonitoringModel.shared)
+            .environment(\.locale, localization.locale)
     }
 }
 
@@ -292,7 +257,7 @@ private final class MonitoringModel: ObservableObject {
 
     private var didStartAtLaunch = false
     private var scheduleTask: Task<Void, Never>?
-    private var lastObservedHealth: [ServiceID: Bool] = [:]
+    private var confirmedHealth = ConfirmedServiceHealth(defaults: .standard)
     @Published private(set) var isRefreshingAll = false
     private var activeChecks: [ServiceID: Task<ProviderCheckResult?, Never>] = [:]
     private var pendingRefreshAlerts: [NSPanel] = []
@@ -348,7 +313,6 @@ private final class MonitoringModel: ObservableObject {
                 transport: URLSessionHTTPTransport()
             )
             let result = await provider.check(at: attemptedAt)
-            record(result, for: .aircall)
             aircallResult = result
             return result
         } catch {
@@ -358,7 +322,6 @@ private final class MonitoringModel: ObservableObject {
                     attemptedAt: attemptedAt
                 )
             )
-            record(result, for: .aircall)
             aircallResult = result
             return result
         }
@@ -372,7 +335,6 @@ private final class MonitoringModel: ObservableObject {
 
         let attemptedAt = Date()
         let result = await BigCommerceStatusProvider().check(at: attemptedAt)
-        record(result, for: .bigcommerce)
         bigCommerceResult = result
         return result
     }
@@ -383,7 +345,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingCanva = true
         defer { isCheckingCanva = false }
         let result = await CanvaStatusProvider().check(at: Date())
-        record(result, for: .canva)
         canvaResult = result
         return result
     }
@@ -394,7 +355,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingCloudflare = true
         defer { isCheckingCloudflare = false }
         let result = await CloudflareStatusProvider().check(at: Date())
-        record(result, for: .cloudflare)
         cloudflareResult = result
         return result
     }
@@ -405,7 +365,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingCloudways = true
         defer { isCheckingCloudways = false }
         let result = await CloudwaysStatusProvider().check(at: Date())
-        record(result, for: .cloudways)
         cloudwaysResult = result
         return result
     }
@@ -416,7 +375,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingGitHub = true
         defer { isCheckingGitHub = false }
         let result = await GitHubStatusProvider().check(at: Date())
-        record(result, for: .github)
         githubResult = result
         return result
     }
@@ -427,7 +385,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingHubSpot = true
         defer { isCheckingHubSpot = false }
         let result = await HubSpotStatusProvider().check(at: Date())
-        record(result, for: .hubspot)
         hubSpotResult = result
         return result
     }
@@ -438,7 +395,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingMongoDB = true
         defer { isCheckingMongoDB = false }
         let result = await MongoDBStatusProvider().check(at: Date())
-        record(result, for: .mongodb)
         mongoDBResult = result
         return result
     }
@@ -449,7 +405,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingMonday = true
         defer { isCheckingMonday = false }
         let result = await MondayStatusProvider().check(at: Date())
-        record(result, for: .monday)
         mondayResult = result
         return result
     }
@@ -460,7 +415,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingNgrok = true
         defer { isCheckingNgrok = false }
         let result = await NgrokStatusProvider().check(at: Date())
-        record(result, for: .ngrok)
         ngrokResult = result
         return result
     }
@@ -471,7 +425,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingOpenAI = true
         defer { isCheckingOpenAI = false }
         let result = await OpenAIStatusProvider().check(at: Date())
-        record(result, for: .openai)
         openAIResult = result
         return result
     }
@@ -482,7 +435,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingRegister = true
         defer { isCheckingRegister = false }
         let result = await RegisterStatusProvider().check(at: Date())
-        record(result, for: .register)
         registerResult = result
         return result
     }
@@ -493,7 +445,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingPayPal = true
         defer { isCheckingPayPal = false }
         let result = await PayPalStatusProvider().check(at: Date())
-        record(result, for: .paypal)
         payPalResult = result
         return result
     }
@@ -504,7 +455,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingSlack = true
         defer { isCheckingSlack = false }
         let result = await SlackStatusProvider().check(at: Date())
-        record(result, for: .slack)
         slackResult = result
         return result
     }
@@ -515,7 +465,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingStripe = true
         defer { isCheckingStripe = false }
         let result = await StripeStatusProvider().check(at: Date())
-        record(result, for: .stripe)
         stripeResult = result
         return result
     }
@@ -526,7 +475,6 @@ private final class MonitoringModel: ObservableObject {
         isCheckingVercel = true
         defer { isCheckingVercel = false }
         let result = await VercelStatusProvider().check(at: Date())
-        record(result, for: .vercel)
         vercelResult = result
         return result
     }
@@ -576,11 +524,15 @@ private final class MonitoringModel: ObservableObject {
         )
     }
 
-    private func refreshTask(for provider: StatusMenuService) -> Task<ProviderCheckResult?, Never> {
+    private func refreshTask(for provider: StatusMenuService, source: CheckSource) -> Task<ProviderCheckResult?, Never> {
         if let running = activeChecks[provider.id] { return running }
         let task = Task {
             defer { activeChecks[provider.id] = nil }
-            return await provider.refresh()
+            let result = await provider.refresh()
+            if let result, statusMenuServices.contains(where: { $0.id == provider.id }) {
+                await record(result, for: provider, source: source)
+            }
+            return result
         }
         activeChecks[provider.id] = task
         return task
@@ -592,12 +544,16 @@ private final class MonitoringModel: ObservableObject {
         isRefreshingAll = true
         defer { isRefreshingAll = false }
 
-        let checks = providers.map { refreshTask(for: $0) }
+        let checks = providers.map { refreshTask(for: $0, source: .manual) }
         var operational = 0
         var issues = 0
         var failed = 0
-        for check in checks {
+        var details: [RefreshDetails] = []
+        for (provider, check) in zip(providers, checks) {
             guard let result = await check.value else { continue }
+            if let detail = RefreshDetails(result, providerName: provider.name) {
+                details.append(detail)
+            }
             switch result {
             case .observed(let observation) where observation.isOperational: operational += 1
             case .observed: issues += 1
@@ -608,7 +564,8 @@ private final class MonitoringModel: ObservableObject {
         let locale = LocalizationManager.shared.locale
         presentRefreshPanel(
             title: String(localized: LocalizedStringResource("Refresh all", locale: locale)),
-            message: LocalizedStringResource("Operational: \(operational) · With issues: \(issues) · Failed checks: \(failed)", locale: locale)
+            message: LocalizedStringResource("Operational: \(operational) · With issues: \(issues) · Failed checks: \(failed)", locale: locale),
+            details: details
         )
     }
 
@@ -616,8 +573,8 @@ private final class MonitoringModel: ObservableObject {
         guard let provider = statusMenuServices.first(where: { $0.id == id }),
               !provider.isChecking else { return }
 
-        let previousHealth = lastObservedHealth[id]
-        guard let result = await refreshTask(for: provider).value else { return }
+        let previousHealth = confirmedHealth.isOperational(id)
+        guard let result = await refreshTask(for: provider, source: .manual).value else { return }
         presentRefreshResult(result, for: provider.name, previousHealth: previousHealth)
     }
 
@@ -640,13 +597,14 @@ private final class MonitoringModel: ObservableObject {
             message = LocalizedStringResource("Could not verify the service status.", locale: locale)
         }
 
-        presentRefreshPanel(title: name, message: message)
+        let details = RefreshDetails(result)
+        presentRefreshPanel(title: name, message: message, details: details.map { [$0] } ?? [])
     }
 
-    private func presentRefreshPanel(title: String, message: LocalizedStringResource) {
+    private func presentRefreshPanel(title: String, message: LocalizedStringResource, details: [RefreshDetails]) {
         let locale = LocalizationManager.shared.locale
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 350, height: 105),
+            contentRect: NSRect(x: 0, y: 0, width: details.isEmpty ? 350 : 480, height: details.isEmpty ? 105 : 300),
             styleMask: [.titled],
             backing: .buffered,
             defer: false
@@ -654,7 +612,7 @@ private final class MonitoringModel: ObservableObject {
         panel.title = title
         panel.hidesOnDeactivate = false
         panel.contentView = NSHostingView(rootView:
-            RefreshResultView(message: String(localized: message)) { [weak panel] in
+            RefreshResultView(message: String(localized: message), details: details) { [weak panel] in
                 NSApplication.shared.stopModal()
                 panel?.orderOut(nil)
             }
@@ -673,15 +631,19 @@ private final class MonitoringModel: ObservableObject {
         }
     }
 
-    private func record(_ result: ProviderCheckResult, for id: ServiceID) {
+    private func record(_ result: ProviderCheckResult, for provider: StatusMenuService, source: CheckSource) async {
+        let transition = confirmedHealth.record(result, for: provider.id, source: source)
         guard case .observed(let observation) = result else { return }
-        lastObservedHealth[id] = observation.isOperational
-        guard observation.isOperational else { return }
-        lastOperationalAt[id.rawValue] = observation.observedAt
-        UserDefaults.standard.set(
-            lastOperationalAt.mapValues(\.timeIntervalSince1970),
-            forKey: Self.lastOperationalAtDefaultsKey
-        )
+        if observation.isOperational {
+            lastOperationalAt[provider.id.rawValue] = observation.observedAt
+            UserDefaults.standard.set(
+                lastOperationalAt.mapValues(\.timeIntervalSince1970),
+                forKey: Self.lastOperationalAtDefaultsKey
+            )
+        }
+        if let transition {
+            await ServiceNotifications.shared.post(transition, providerName: provider.name, observation: observation)
+        }
     }
 
     private func restartProviderSchedule(checkImmediately: Bool) {
@@ -712,7 +674,7 @@ private final class MonitoringModel: ObservableObject {
     private func checkEnabledProviders() async {
         for provider in statusMenuServices {
             guard !Task.isCancelled, !isRefreshingAll else { return }
-            _ = await refreshTask(for: provider).value
+            _ = await refreshTask(for: provider, source: .automatic).value
         }
     }
 
@@ -724,14 +686,62 @@ private final class MonitoringModel: ObservableObject {
     }
 }
 
+private struct RefreshDetails {
+    let providerName: String?
+    let result: ProviderCheckResult
+
+    init?(_ result: ProviderCheckResult, providerName: String? = nil) {
+        if case .observed(let observation) = result, observation.isOperational { return nil }
+        self.providerName = providerName
+        self.result = result
+    }
+}
+
 private struct RefreshResultView: View {
     let message: String
+    let details: [RefreshDetails]
     let dismiss: () -> Void
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 14) {
             Text(verbatim: message)
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+            if !details.isEmpty {
+                Divider()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(details.indices, id: \.self) { index in
+                            let detail = details[index]
+                            VStack(alignment: .leading, spacing: 6) {
+                                if let name = detail.providerName {
+                                    Text(verbatim: name).font(.headline)
+                                }
+                                switch detail.result {
+                                case .failed(let failure):
+                                    Text(failureDescription(failure.reason))
+                                case .observed(let observation):
+                                    if observation.activeIncidents.isEmpty {
+                                        Text(observation.condition == .operational ? "No active incidents." : conditionLabel(observation.condition))
+                                    }
+                                    ForEach(observation.activeIncidents.indices, id: \.self) { index in
+                                        let incident = observation.activeIncidents[index]
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(verbatim: incident.title).fontWeight(.medium)
+                                            if let summary = incident.summary?.trimmingCharacters(in: .whitespacesAndNewlines),
+                                               !summary.isEmpty, summary != incident.title {
+                                                Text(verbatim: summary)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+                }
+            }
 
             Button("OK", action: dismiss)
                 .keyboardShortcut(.defaultAction)
@@ -787,7 +797,7 @@ private struct StatusBarLabel: View {
 }
 
 private struct StatusBarMenu: View {
-    @Environment(\.openWindow) private var openWindow
+    let openSettings: () -> Void
     @EnvironmentObject private var monitor: MonitoringModel
 
     var body: some View {
@@ -833,10 +843,7 @@ private struct StatusBarMenu: View {
         }
         .disabled(providers.isEmpty || monitor.isRefreshingAll)
 
-        Button("Settings") {
-            openWindow(id: AppIdentity.dashboardWindowID)
-            NSApplication.shared.activate(ignoringOtherApps: true)
-        }
+        Button("Settings", action: openSettings)
 
         Button("Quit Status Page Monitor") {
             NSApplication.shared.terminate(nil)
@@ -915,6 +922,7 @@ private struct DashboardView: View {
                 } header: {
                     Label("Schedule", systemImage: "clock")
                 }
+                NotificationPermissionSection()
             case .about:
                 Section {
                     Text(verbatim: AppIdentity.displayName)
@@ -1206,13 +1214,7 @@ private struct ServiceMenu: View {
         switch provider.result {
         case .observed(let observation):
             if !observation.activeIncidents.isEmpty { return "Active issue" }
-            return switch observation.condition {
-            case .operational: "Operational"
-            case .degradedPerformance: "Degraded performance"
-            case .partialOutage: "Partial outage"
-            case .majorOutage: "Major outage"
-            case .maintenance: "Maintenance"
-            }
+            return conditionLabel(observation.condition)
         case .failed: return "Check failed"
         case nil: return "Waiting"
         }
@@ -1268,6 +1270,16 @@ private struct ProviderConfigurationRow: View {
             .help("Open \(name) status page")
             .accessibilityLabel("Open \(name) status page")
         }
+    }
+}
+
+private func conditionLabel(_ condition: ServiceCondition) -> LocalizedStringKey {
+    switch condition {
+    case .operational: "Operational"
+    case .degradedPerformance: "Degraded performance"
+    case .partialOutage: "Partial outage"
+    case .majorOutage: "Major outage"
+    case .maintenance: "Maintenance"
     }
 }
 

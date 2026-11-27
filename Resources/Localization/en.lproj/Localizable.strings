@@ -83,3 +83,15 @@
 "The service has an ongoing issue." = "The service has an ongoing issue.";
 "Could not verify the service status." = "Could not verify the service status.";
 "OK" = "OK";
+/* Service notifications */
+"Service notifications" = "Service notifications";
+"Allow notifications to receive alerts about incidents and service recovery." = "Allow notifications to receive alerts about incidents and service recovery.";
+"Enable notifications" = "Enable notifications";
+"Notifications are enabled." = "Notifications are enabled.";
+"Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings." = "Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings.";
+"Notification permission status is unavailable." = "Notification permission status is unavailable.";
+"Service issue detected" = "Service issue detected";
+"Service recovered" = "Service recovered";
+"%1$@ has an active issue." = "%1$@ has an active issue.";
+"%1$@ has an active issue: %2$@" = "%1$@ has an active issue: %2$@";
+"%1$@ is operational again. Recovered at %2$@." = "%1$@ is operational again. Recovered at %2$@.";

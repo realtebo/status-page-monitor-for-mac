@@ -84,3 +84,15 @@
 "The service has an ongoing issue." = "Il servizio ha un problema in corso.";
 "Could not verify the service status." = "Non è stato possibile verificare lo stato del servizio.";
 "OK" = "OK";
+/* Notifiche dei servizi */
+"Service notifications" = "Notifiche dei servizi";
+"Allow notifications to receive alerts about incidents and service recovery." = "Consenti le notifiche per ricevere avvisi sugli incidenti e sul ripristino dei servizi.";
+"Enable notifications" = "Abilita notifiche";
+"Notifications are enabled." = "Le notifiche sono attive.";
+"Notifications are turned off. To receive alerts, enable notifications for Status Page Monitor in System Settings." = "Le notifiche sono disattivate. Per ricevere avvisi, abilita le notifiche di Status Page Monitor in Impostazioni di Sistema.";
+"Notification permission status is unavailable." = "Lo stato dei permessi per le notifiche non è disponibile.";
+"Service issue detected" = "Problema del servizio rilevato";
+"Service recovered" = "Servizio ripristinato";
+"%1$@ has an active issue." = "%1$@ ha un problema attivo.";
+"%1$@ has an active issue: %2$@" = "%1$@ ha un problema attivo: %2$@";
+"%1$@ is operational again. Recovered at %2$@." = "%1$@ è tornato operativo. Ripristino alle %2$@.";
